@@ -111,10 +111,22 @@ tidak perlu menyentuh `index.html` sama sekali.
   organisasi ke Pembina, Wakasek Kesiswaan, dan pimpinan sekolah.
 - **Kepala Sekolah & Pengawas Sekolah**: ringkasan lintas semua divisi & organisasi di atas (read-only) ditambah halaman
   **Catatan Pemantauan** untuk menuliskan arahan/pembinaan yang tersimpan dan bisa dilihat bersama.
-- **Wakasek Kesiswaan → Admin BK & Organisasi**: tab khusus untuk membuat akun login (nama, jabatan, peran,
-  username, password) untuk Guru BK maupun untuk tiap organisasi siswa (OSIS, Pramuka, PMR, Paskibra, dst).
-  Akun yang dibuat di sini langsung bisa dipakai login ke dashboard masing-masing peran — tersimpan di
-  `localStorage` browser (lihat catatan keterbatasan di bagian bawah), bukan ditulis ulang ke `data/users.json`.
+- **Wakasek Kesiswaan → Admin BK & Organisasi**: tab khusus untuk membuat & mengubah akun login (nama, jabatan,
+  peran, username, password) untuk Guru BK maupun untuk tiap organisasi siswa (OSIS, Pramuka, PMR, Paskibra, dst).
+  Akun yang dibuat/diubah di sini **benar-benar ditulis ulang ke `data/users.json` di repository GitHub** lewat
+  GitHub Contents API (commit otomatis dari browser), sehingga langsung bisa dipakai login dari perangkat mana pun
+  — bukan cuma disimpan lokal di `localStorage`. Supaya ini bisa jalan, Wakasek Kesiswaan perlu mengisi sekali
+  bagian **"Pengaturan GitHub"** di tab yang sama:
+  - **Owner/Organisasi**, **Repository**, **Branch**, dan **Path file** (`data/users.json`) dari repo yang dipakai
+    untuk hosting aplikasi ini.
+  - **Personal Access Token GitHub** dengan izin tulis ke repo tersebut (untuk *classic token* pilih scope `repo`;
+    untuk *fine-grained token* beri akses **Contents: Read and write** khusus ke repo ini).
+
+  ⚠️ Token ini tersimpan di `localStorage` browser yang dipakai untuk mengisinya dan dipakai langsung dari
+  JavaScript di browser tersebut. Karena itu: pakai token dengan akses seminimal mungkin (idealnya *fine-grained
+  token* yang di-scope hanya ke repo ini, bukan token dengan akses ke seluruh akun GitHub), dan jangan isi token
+  ini di perangkat/browser bersama yang tidak tepercaya. Setelah commit berhasil, GitHub Pages biasanya perlu
+  waktu singkat (beberapa puluh detik) untuk menayangkan ulang `users.json` versi terbaru.
 
 Data baru yang ditambahkan lewat form "+ Tambah ..." langsung ikut muncul di
 dashboard Kepala Sekolah dan Pengawas Sekolah, karena keduanya membaca sumber
