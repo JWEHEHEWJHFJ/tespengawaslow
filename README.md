@@ -19,8 +19,10 @@ login sekolah dengan dashboard berbeda untuk tiap jabatan:
 index.html                       ← halaman login + seluruh dashboard (HTML/CSS/JS jadi satu)
 data/users.json                  ← daftar akun, ROLE_INFO & MONITORING_ROLES untuk login
 data/siswa.json                  ← master data siswa: array [{nisn, nama, kelas}, ...]
-data/guru-bk.json                ← data khusus dashboard Guru BK
-data/wakasek-kesiswaan.json      ← data khusus dashboard Wakasek Kesiswaan
+data/waksis/                     ← data-data yang berkaitan dengan urusan Kesiswaan
+data/waksis/guru-bk.json         ← data khusus dashboard Guru BK
+data/waksis/wakasek-kesiswaan.json ← data khusus dashboard Wakasek Kesiswaan
+data/waksis/laporan-organisasi.json ← daftar organisasi siswa yang dipantau Wakasek Kesiswaan / Kepala Sekolah / Pengawas
 data/kurikulum.json              ← data khusus dashboard Wakasek Kurikulum
 data/humas.json                  ← data khusus dashboard Wakasek Humas
 data/sarpras.json                ← data khusus dashboard Wakasek Sarpras
@@ -29,7 +31,6 @@ data/osis.json                   ← data khusus dashboard OSIS
 data/pramuka.json                ← data khusus dashboard Pramuka
 data/pmr.json                    ← data khusus dashboard PMR
 data/paskibra.json               ← data khusus dashboard Paskibra
-data/laporan-organisasi.json     ← daftar organisasi siswa yang dipantau Wakasek Kesiswaan / Kepala Sekolah / Pengawas
 ```
 
 **Perubahan dari versi sebelumnya:** semua file di folder `data/` sekarang
@@ -110,6 +111,10 @@ tidak perlu menyentuh `index.html` sama sekali.
   organisasi ke Pembina, Wakasek Kesiswaan, dan pimpinan sekolah.
 - **Kepala Sekolah & Pengawas Sekolah**: ringkasan lintas semua divisi & organisasi di atas (read-only) ditambah halaman
   **Catatan Pemantauan** untuk menuliskan arahan/pembinaan yang tersimpan dan bisa dilihat bersama.
+- **Wakasek Kesiswaan → Admin BK & Organisasi**: tab khusus untuk membuat akun login (nama, jabatan, peran,
+  username, password) untuk Guru BK maupun untuk tiap organisasi siswa (OSIS, Pramuka, PMR, Paskibra, dst).
+  Akun yang dibuat di sini langsung bisa dipakai login ke dashboard masing-masing peran — tersimpan di
+  `localStorage` browser (lihat catatan keterbatasan di bagian bawah), bukan ditulis ulang ke `data/users.json`.
 
 Data baru yang ditambahkan lewat form "+ Tambah ..." langsung ikut muncul di
 dashboard Kepala Sekolah dan Pengawas Sekolah, karena keduanya membaca sumber

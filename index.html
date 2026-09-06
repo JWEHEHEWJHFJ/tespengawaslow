@@ -405,8 +405,11 @@
   const DATA_FILES = {
     users: "data/users.json",
     siswa: "data/siswa.json",
-    guruBk: "data/guru-bk.json",
-    kesiswaan: "data/wakasek-kesiswaan.json",
+    // Guru BK, Wakasek Kesiswaan, dan daftar organisasi siswa dikelompokkan
+    // di dalam folder data/waksis/ (data-data yang berkaitan dengan urusan
+    // Kesiswaan: BK, organisasi, dan Kesiswaan sendiri).
+    guruBk: "data/waksis/guru-bk.json",
+    kesiswaan: "data/waksis/wakasek-kesiswaan.json",
     kurikulum: "data/kurikulum.json",
     humas: "data/humas.json",
     sarpras: "data/sarpras.json",
@@ -415,7 +418,7 @@
     pramuka: "data/pramuka.json",
     pmr: "data/pmr.json",
     paskibra: "data/paskibra.json",
-    laporanOrganisasi: "data/laporan-organisasi.json"
+    laporanOrganisasi: "data/waksis/laporan-organisasi.json"
   };
 
   async function fetchJson(url){
@@ -721,7 +724,14 @@
           </div>`;
       }
       if(f.type==="select"){
-        const opts = f.options.map(o=>`<option value="${escapeHtml(o)}" ${o===currentVal?"selected":""}>${escapeHtml(o)}</option>`).join("");
+        // f.options bisa berisi string biasa ("Selesai") ATAU objek
+        // {value,label} (dipakai saat teks yang tampil ke pengguna berbeda
+        // dari value yang disimpan, mis. dropdown "Peran" pada Admin Akun).
+        const opts = f.options.map(o=>{
+          const val = (o && typeof o === "object") ? o.value : o;
+          const lbl = (o && typeof o === "object") ? o.label : o;
+          return `<option value="${escapeHtml(val)}" ${val===currentVal?"selected":""}>${escapeHtml(lbl)}</option>`;
+        }).join("");
         return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><select name="${f.name}">${opts}</select></div>`;
       }
       if(f.type==="textarea"){
@@ -789,7 +799,12 @@
           </div>`;
       }
       if(f.type==="select"){
-        const opts = f.options.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+        // Lihat catatan yang sama di openEditModal soal opsi berbentuk objek {value,label}.
+        const opts = f.options.map(o=>{
+          const val = (o && typeof o === "object") ? o.value : o;
+          const lbl = (o && typeof o === "object") ? o.label : o;
+          return `<option value="${escapeHtml(val)}">${escapeHtml(lbl)}</option>`;
+        }).join("");
         return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><select name="${f.name}">${opts}</select></div>`;
       }
       if(f.type==="textarea"){
@@ -1698,6 +1713,86 @@
   );
 
   /* =========================================================
+     ADMIN AKUN BK & ORGANISASI (menu khusus Wakasek Kesiswaan)
+     Lewat menu ini, Wakasek Kesiswaan bisa membuatkan username &
+     password login untuk Guru BK dan tiap organisasi siswa (OSIS,
+     Pramuka, PMR, Paskibra, dst. — mengikuti ORGANISASI_LIST).
+     Akun baru disimpan di localStorage ("extra_kesiswaan_akun") dan
+     langsung bisa dipakai login karena findUser/findUserByUsername
+     di bawah membaca gabungan data/users.json + akun tambahan ini.
+     ========================================================= */
+  function getManagedAccountRoles(){
+    const roles = [{ role:"guru_bk", label: ROLE_INFO.guru_bk.label }];
+    ORGANISASI_LIST.forEach(org=>{
+      roles.push({ role: org.roleKey, label: org.label });
+    });
+    return roles;
+  }
+  const MANAGED_ACCOUNT_ROLE_KEYS = getManagedAccountRoles().map(r=>r.role);
+
+  // Semua akun (bawaan data/users.json + akun baru buatan Wakasek
+  // Kesiswaan) — dipakai untuk proses login (findUser/findUserByUsername).
+  function getAllUsers(){
+    return withExtra("kesiswaan_akun", USERS);
+  }
+  // Hanya akun Guru BK & Organisasi — yang ditampilkan/dikelola di menu ini.
+  function getManagedAccounts(){
+    return getAllUsers().filter(u => MANAGED_ACCOUNT_ROLE_KEYS.indexOf(u.role) !== -1);
+  }
+
+  const FIELDS_KESISWAAN_AKUN = [
+    {name:"name", label:"Nama lengkap", full:true},
+    {name:"jabatan", label:"Jabatan (contoh: Guru BK, Ketua OSIS)", full:true},
+    {name:"role", label:"Peran / akses dashboard", type:"select",
+      options: getManagedAccountRoles().map(r=>({value:r.role, label:r.label}))},
+    {name:"username", label:"Username"},
+    {name:"password", label:"Kata sandi", type:"password"}
+  ];
+
+  FORM_HANDLERS["kesiswaan-akun-baru"] = (data)=>{
+    const username = (data.username||"").trim();
+    const password = data.password||"";
+    const name = (data.name||"").trim();
+    const jabatan = (data.jabatan||"").trim();
+    const role = data.role;
+    if(!username || !password || !name || !jabatan || !role){
+      alert("Mohon lengkapi semua kolom (nama, jabatan, peran, username, dan kata sandi).");
+      return;
+    }
+    const sudahAda = getAllUsers().some(u => u.username.toLowerCase() === username.toLowerCase());
+    if(sudahAda){
+      alert(`Username "${username}" sudah dipakai akun lain. Silakan gunakan username yang berbeda.`);
+      return;
+    }
+    addExtra("kesiswaan_akun", { username, password, role, name, jabatan });
+  };
+
+  VIEWS.kesiswaan_admin_akun = ()=>{
+    const accounts = getManagedAccounts().map(a => Object.assign({}, a, {
+      roleLabel: (ROLE_INFO[a.role] || {}).label || a.role
+    }));
+    return `
+      <div class="section">
+        ${sectionHead("Buat akun Guru BK / Organisasi", "Akun yang dibuat di sini bisa langsung dipakai untuk login ke dashboard Guru BK atau dashboard organisasi terkait.")}
+        ${addForm("kesiswaan-akun-baru", "+ Buat akun baru", FIELDS_KESISWAAN_AKUN)}
+      </div>
+      <div class="section">
+        ${sectionHead("Daftar akun Guru BK & Organisasi")}
+        ${renderTable(accounts, [
+          {key:"name", label:"Nama"},
+          {key:"jabatan", label:"Jabatan"},
+          {key:"roleLabel", label:"Peran"},
+          {key:"username", label:"Username"},
+          {key:"password", label:"Kata Sandi"}
+        ], {key:"kesiswaan_akun", title:"Akun Guru BK / Organisasi", fields: FIELDS_KESISWAAN_AKUN})}
+      </div>`;
+  };
+
+  ROUTE_CONFIG.wakasek_kesiswaan.push(
+    {id:"kesiswaan_admin_akun", label:"Admin BK & Organisasi", title:"Admin Akun Guru BK & Organisasi"}
+  );
+
+  /* =========================================================
      STATE & RENDER UTAMA
      ========================================================= */
   let currentUser = null;
@@ -1706,10 +1801,12 @@
   let orgLaporanFilter = "semua"; // id organisasi yang dipilih pada Laporan Organisasi ("semua" = tampilkan semua)
 
   function findUser(username, password){
-    return USERS.find(u => u.username===username && u.password===password) || null;
+    // getAllUsers() = data/users.json + akun Guru BK/Organisasi yang dibuat
+    // Wakasek Kesiswaan lewat menu "Admin BK & Organisasi" (localStorage).
+    return getAllUsers().find(u => u.username===username && u.password===password) || null;
   }
   function findUserByUsername(username){
-    return USERS.find(u => u.username===username) || null;
+    return getAllUsers().find(u => u.username===username) || null;
   }
 
   function showLogin(message){
@@ -1765,8 +1862,8 @@
       "USERS (data/users.json)": USERS !== undefined,
       "ROLE_INFO (data/users.json)": ROLE_INFO !== undefined,
       "SISWA_LIST (data/siswa.json)": Array.isArray(SISWA_LIST),
-      "DATA_GURU_BK (data/guru-bk.json)": DATA_GURU_BK !== undefined,
-      "DATA_KESISWAAN (data/wakasek-kesiswaan.json)": DATA_KESISWAAN !== undefined,
+      "DATA_GURU_BK (data/waksis/guru-bk.json)": DATA_GURU_BK !== undefined,
+      "DATA_KESISWAAN (data/waksis/wakasek-kesiswaan.json)": DATA_KESISWAAN !== undefined,
       "DATA_KURIKULUM (data/kurikulum.json)": DATA_KURIKULUM !== undefined,
       "DATA_HUMAS (data/humas.json)": DATA_HUMAS !== undefined,
       "DATA_SARPRAS (data/sarpras.json)": DATA_SARPRAS !== undefined,
@@ -1775,7 +1872,7 @@
       "DATA_PRAMUKA (data/pramuka.json)": DATA_PRAMUKA !== undefined,
       "DATA_PMR (data/pmr.json)": DATA_PMR !== undefined,
       "DATA_PASKIBRA (data/paskibra.json)": DATA_PASKIBRA !== undefined,
-      "ORGANISASI_LIST (data/laporan-organisasi.json)": ORGANISASI_LIST !== undefined
+      "ORGANISASI_LIST (data/waksis/laporan-organisasi.json)": ORGANISASI_LIST !== undefined
     };
     const missing = Object.keys(required).filter(k => !required[k]);
     return missing;
