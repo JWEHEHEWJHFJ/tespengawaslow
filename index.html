@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIM Sekolah — Portal Manajemen Sekolah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef1f5;
+    --surface:#ffffff;
+    --surface-2:#f6f8fa;
+    --ink:#1b2330;
+    --muted:#64708a;
+    --line:#dde2ea;
+    --navy:#1b2a4a;
+    --navy-dark:#101a33;
+    --gold:#b7862a;
+    --gold-light:#f4e6c8;
+    --green:#1f7a4d; --green-bg:#e4f5ec;
+    --amber:#a5690a; --amber-bg:#fbecd2;
+    --red:#b13434; --red-bg:#fbe4e4;
+    --gray:#586074; --gray-bg:#eef0f4;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(20,30,50,.06), 0 10px 26px -14px rgba(20,30,50,.22);
+    --font-display:'Fraunces',serif;
+    --font-body:'Inter',system-ui,-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-body);
+    color:var(--ink);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:var(--font-display);margin:0;font-weight:600;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+  a{color:inherit;}
+  [hidden]{display:none !important;}
+
+  /* ---------- Seal / stempel signature element ---------- */
+  .seal{
+    width:60px;height:60px;border-radius:50%;
+    border:2px solid currentColor;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:700;font-size:13px;
+    letter-spacing:.02em;position:relative;flex-shrink:0;
+  }
+  .seal::before{
+    content:"";position:absolute;inset:5px;border:1px solid currentColor;
+    border-radius:50%;opacity:.55;
+  }
+  .seal-sm{width:38px;height:38px;font-size:10px;}
+  .seal-sm::before{inset:3px;}
+
+  /* ---------- Login screen ---------- */
+  .login-wrap{display:grid;grid-template-columns:1.05fr 1fr;min-height:100vh;}
+  .login-brand{
+    background:
+      radial-gradient(circle at 85% 15%, rgba(183,134,42,.18), transparent 45%),
+      linear-gradient(160deg,var(--navy),var(--navy-dark));
+    color:#fff;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:72px 64px;
+  }
+  .login-brand .seal-giant{
+    position:absolute;right:-60px;bottom:-60px;
+    width:340px;height:340px;color:rgba(255,255,255,.08);
+    font-size:34px;
+  }
+  .login-brand .eyebrow{
+    font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:18px;
+  }
+  .login-brand h1{font-size:clamp(30px,3.6vw,44px);line-height:1.15;max-width:480px;color:#fff;}
+  .login-brand p{color:rgba(255,255,255,.72);max-width:420px;margin-top:18px;line-height:1.6;font-size:15px;}
+  .brand-roles{display:flex;flex-wrap:wrap;gap:8px;margin-top:34px;}
+  .brand-roles span{
+    font-size:12px;border:1px solid rgba(255,255,255,.22);
+    padding:6px 12px;border-radius:999px;color:rgba(255,255,255,.85);
+  }
+  .login-form-panel{display:flex;align-items:center;justify-content:center;padding:32px;background:var(--bg);}
+  .login-card{
+    width:100%;max-width:380px;background:var(--surface);
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:38px 34px;box-shadow:var(--shadow);
+  }
+  .login-card h2{font-size:22px;margin-bottom:6px;}
+  .login-card .sub{color:var(--muted);font-size:14px;margin-bottom:26px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink);}
+  .field input, .field select, .field textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);
+    border-radius:8px;font-size:14px;background:var(--surface-2);color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus,
+  button:focus-visible, .nav-item:focus-visible, .tab-btn:focus-visible{
+    outline:2px solid var(--gold);outline-offset:1px;
+  }
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 18px;border-radius:8px;border:1px solid transparent;
+    font-size:14px;font-weight:600;transition:filter .15s ease;
+  }
+  .btn:hover{filter:brightness(1.06);}
+  .btn-primary{background:var(--navy);color:#fff;width:100%;}
+  .btn-gold{background:var(--gold);color:#fff;}
+  .btn-outline{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .btn-danger{background:var(--red);color:#fff;}
+  .login-error{
+    background:var(--red-bg);color:var(--red);border:1px solid #f0c9c9;
+    padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:16px;
+  }
+  .demo-hint{
+    margin-top:22px;padding-top:18px;border-top:1px dashed var(--line);
+    font-size:12px;color:var(--muted);line-height:1.7;
+  }
+  .demo-hint code{font-family:var(--font-mono);background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+
+  /* ---------- Dashboard shell ---------- */
+  #dashboard-screen{display:flex;min-height:100vh;}
+  #sidebar{
+  width:252px;flex-shrink:0;background:var(--navy-dark);color:#fff;
+  display:flex;flex-direction:column;
+  position:sticky;top:0;align-self:flex-start;
+  height:100vh;overflow-y:auto;
+}
+  .side-head{padding:24px 20px;display:flex;gap:12px;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);}
+  .side-head .school-name{font-family:var(--font-display);font-size:15px;line-height:1.25;}
+  .side-head .school-tag{font-size:11px;color:rgba(255,255,255,.5);font-family:var(--font-mono);letter-spacing:.05em;}
+  .side-role{
+    margin:18px 20px 6px;padding:10px 12px;border-radius:8px;
+    background:rgba(255,255,255,.06);font-size:12px;color:rgba(255,255,255,.85);
+  }
+  .side-role strong{display:block;font-size:13px;font-family:var(--font-display);color:#fff;margin-bottom:2px;}
+  nav#side-nav{flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+  .nav-item{
+    text-align:left;background:transparent;color:rgba(255,255,255,.72);
+    border:none;border-left:3px solid transparent;padding:10px 12px;
+    border-radius:6px;font-size:14px;
+  }
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav-item.active{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--gold);font-weight:600;}
+  .side-foot{padding:16px;border-top:1px solid rgba(255,255,255,.08);}
+  .side-foot .btn{width:100%;}
+
+  #main-col{flex:1;min-width:0;display:flex;flex-direction:column;}
+  #topbar{
+    height:66px;flex-shrink:0;background:var(--surface);
+    border-bottom:1px solid var(--line);display:flex;align-items:center;
+    justify-content:space-between;padding:0 28px;
+  }
+  #topbar .page-title{font-size:19px;}
+  #topbar .who{display:flex;align-items:center;gap:12px;}
+  #topbar .who .meta{text-align:right;}
+  #topbar .who .name{font-size:13.5px;font-weight:600;}
+  #topbar .who .jabatan{font-size:12px;color:var(--muted);}
+  #content{padding:28px 32px 60px;flex:1;overflow-y:auto;}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:24px;flex-wrap:wrap;}
+  .tab-btn{
+    background:transparent;border:none;padding:11px 16px;font-size:13.5px;
+    color:var(--muted);border-bottom:2px solid transparent;font-weight:500;
+  }
+  .tab-btn.active{color:var(--navy);border-bottom-color:var(--gold);font-weight:700;}
+  .tab-btn:hover{color:var(--ink);}
+
+  /* ---------- Stat cards ---------- */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:30px;}
+  .stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;}
+  .stat-card .num{font-size:30px;line-height:1;margin-bottom:6px;}
+  .stat-card .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;}
+
+  /* ---------- Section blocks ---------- */
+  .section{margin-bottom:34px;}
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .section-head h3{font-size:16px;}
+  .section-head .hint{font-size:12.5px;color:var(--muted);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px;}
+  th{
+    text-align:left;background:var(--surface-2);padding:11px 16px;font-size:11.5px;
+    text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+    border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  .cell-date{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);white-space:nowrap;}
+
+  .badge{display:inline-block;padding:3px 11px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .badge-green{background:var(--green-bg);color:var(--green);}
+  .badge-amber{background:var(--amber-bg);color:var(--amber);}
+  .badge-red{background:var(--red-bg);color:var(--red);}
+  .badge-gray{background:var(--gray-bg);color:var(--gray);}
+
+  .empty-state{padding:44px 20px;text-align:center;color:var(--muted);font-size:14px;}
+
+  /* ---------- Aksi (edit / hapus) pada baris tabel ---------- */
+  .row-actions{display:flex;gap:6px;}
+  .icon-btn{
+    width:30px;height:30px;border-radius:7px;border:1px solid var(--line);
+    background:var(--surface-2);display:inline-flex;align-items:center;justify-content:center;
+    color:var(--muted);padding:0;
+  }
+  .icon-btn:hover{background:var(--surface);color:var(--ink);border-color:#c7cede;}
+  .icon-btn.icon-delete:hover{background:var(--red-bg);color:var(--red);border-color:#f0c9c9;}
+  .icon-btn.icon-edit:hover{background:var(--gold-light);color:var(--gold);border-color:var(--gold);}
+  .icon-btn.icon-view:hover{background:var(--gold-light);color:var(--gold);border-color:var(--gold);}
+  .icon-btn.icon-replace:hover{background:var(--amber-bg);color:var(--amber);border-color:#f0dba5;}
+  .icon-btn.icon-download:hover{background:var(--green-bg);color:var(--green);border-color:#c9ecdb;}
+
+  /* ---------- Modal (edit data / konfirmasi hapus) ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(16,22,40,.55);
+    display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;
+  }
+  .modal-box{
+    width:100%;max-width:560px;max-height:88vh;overflow-y:auto;
+    background:var(--surface);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:26px 28px;
+  }
+  .modal-box h3{font-size:19px;margin-bottom:6px;}
+  .modal-sub{font-size:13.5px;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+  .modal-actions .btn{width:auto;}
+
+  /* ---------- Forms (add data) ---------- */
+  details.add-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:18px;}
+  details.add-box > summary{
+    list-style:none;cursor:pointer;padding:14px 18px;font-weight:600;font-size:13.5px;
+    display:flex;align-items:center;gap:8px;color:var(--navy);
+  }
+  details.add-box > summary::-webkit-details-marker{display:none;}
+  details.add-box > summary::before{content:"+";font-family:var(--font-mono);font-size:15px;}
+  details.add-box[open] > summary::before{content:"–";}
+  .add-box-body{padding:4px 18px 18px;border-top:1px solid var(--line);}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:16px 0;}
+  .form-grid .full{grid-column:1/-1;}
+  .student-hint{font-size:12px;color:var(--muted);margin-top:5px;min-height:15px;}
+  .student-hint.filled{color:var(--green);font-weight:600;}
+  .student-combo{position:relative;}
+  .student-suggestions{
+    position:absolute;z-index:30;top:calc(100% + 4px);left:0;right:0;
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;
+    box-shadow:var(--shadow);max-height:230px;overflow-y:auto;
+  }
+  .student-suggestion-item{
+    padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;
+    align-items:baseline;gap:10px;font-size:13.5px;border-bottom:1px solid var(--line);
+  }
+  .student-suggestion-item:last-child{border-bottom:none;}
+  .student-suggestion-item:hover{background:var(--surface-2);}
+  .student-suggestion-item .ssi-nama{font-weight:600;color:var(--ink);}
+  .student-suggestion-item .ssi-meta{color:var(--muted);font-size:12px;white-space:nowrap;font-family:var(--font-mono);}
+  .student-suggestion-empty{padding:10px 12px;color:var(--muted);font-size:13px;}
+
+  /* ---------- Monitoring notes (kepsek/pengawas) ---------- */
+  .note-item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;}
+  .note-item .note-meta{font-size:12px;color:var(--muted);margin-bottom:6px;font-family:var(--font-mono);}
+  .note-item .note-meta strong{color:var(--ink);font-family:var(--font-body);}
+
+  /* ---------- Lampiran (lihat / ganti / unduh) ---------- */
+  .attachment-row{
+    margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .attachment-name{font-size:12.5px;color:var(--ink);font-weight:600;flex:1;min-width:120px;}
+  .attachment-name .fname-sub{display:block;font-size:11.5px;color:var(--muted);font-weight:400;font-family:var(--font-mono);margin-top:1px;}
+  .attachment-actions{display:flex;gap:6px;flex-shrink:0;}
+  .attachment-empty{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);}
+
+  .role-chip{
+    display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+    padding:4px 10px;border-radius:999px;
+  }
+
+  @media (max-width:900px){
+    .login-wrap{grid-template-columns:1fr;}
+    .login-brand{padding:44px 32px;min-height:260px;}
+    #dashboard-screen{flex-direction:column;}
+    #sidebar{width:100%;flex-direction:row;align-items:center;overflow-x:auto;}
+    .side-head{border-bottom:none;border-right:1px solid rgba(255,255,255,.08);}
+    .side-role{display:none;}
+    nav#side-nav{flex-direction:row;padding:8px;}
+    .nav-item{border-left:none;border-bottom:3px solid transparent;white-space:nowrap;}
+    .nav-item.active{border-left-color:transparent;border-bottom-color:var(--gold);}
+    .side-foot{border-top:none;}
+    #topbar{padding:0 16px;}
+    #content{padding:20px 16px 50px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================= LOGIN SCREEN ======================= -->
+<section id="login-screen" class="login-wrap">
+  <div class="login-brand">
+    <div class="seal seal-giant" aria-hidden="true">SMA</div>
+    <div class="eyebrow">Sistem Informasi Manajemen</div>
+    <h1 id="brand-title">Portal Manajemen<br>SMA Negeri 1 Harapan Bangsa</h1>
+    <p>Satu portal untuk seluruh unsur pimpinan dan pengelola kesiswaan sekolah — setiap peran memiliki dashboard kerja masing-masing, dan dipantau langsung oleh Kepala Sekolah &amp; Pengawas Sekolah.</p>
+    <div class="brand-roles">
+      <span>Pengawas Sekolah</span>
+      <span>Kepala Sekolah</span>
+      <span>Guru BK</span>
+      <span>Wakasek Kesiswaan</span>
+      <span>Wakasek Kurikulum</span>
+      <span>Wakasek Humas</span>
+      <span>Wakasek Sarpras</span>
+      <span>Tata Usaha</span>
+      <span>OSIS</span>
+      <span>Pramuka</span>
+      <span>PMR</span>
+      <span>Paskibra</span>
+    </div>
+  </div>
+  <div class="login-form-panel">
+    <form class="login-card" id="login-form" novalidate>
+      <h2>Masuk ke Portal</h2>
+      <p class="sub">Gunakan akun yang telah diberikan sesuai jabatan / organisasi Anda.</p>
+      <div id="login-error" class="login-error" hidden></div>
+      <div class="field">
+        <label for="login-username">Nama pengguna</label>
+        <input type="text" id="login-username" autocomplete="username" placeholder="contoh: gurubk">
+      </div>
+      <div class="field">
+        <label for="login-password">Kata sandi</label>
+        <input type="password" id="login-password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary">Masuk</button>
+      <div class="demo-hint">
+        <strong>Akun demo</strong> (daftar lengkap & cara ganti ada di <code>README.md</code> dan <code>data/users.js</code>):<br>
+        <code>gurubk / bk123</code> · <code>wakesis / wakesis123</code> · <code>tu / tu123</code><br>
+        <code>osis / osis123</code> · <code>pramuka / pramuka123</code> · <code>pmr / pmr123</code><br>
+        <code>kepsek / kepsek123</code> · <code>pengawas / pengawas123</code>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ======================= DASHBOARD SCREEN ======================= -->
+<div id="dashboard-screen" hidden>
+  <aside id="sidebar">
+    <div class="side-head">
+      <div class="seal seal-sm" aria-hidden="true">SMA</div>
+      <div>
+        <div class="school-name">SMAN 1 Harapan Bangsa</div>
+        <div class="school-tag">SIM SEKOLAH</div>
+      </div>
+    </div>
+    <div class="side-role" id="side-role-box"></div>
+    <nav id="side-nav"></nav>
+    <div class="side-foot">
+      <button class="btn btn-outline" id="logout-btn">Keluar</button>
+    </div>
+  </aside>
+
+  <div id="main-col">
+    <header id="topbar">
+      <div class="page-title" id="page-title">Ringkasan</div>
+      <div class="who">
+        <div class="meta">
+          <div class="name" id="who-name"></div>
+          <div class="jabatan" id="who-jabatan"></div>
+        </div>
+        <div class="seal seal-sm" id="who-seal" aria-hidden="true"></div>
+      </div>
+    </header>
+    <main id="content"></main>
+  </div>
+</div>
+
+<!-- ======================= MODAL: EDIT / HAPUS DATA ======================= -->
+<div id="modal-overlay" class="modal-overlay" hidden>
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<!-- ===== Data per divisi (dipisah per file agar mudah dikelola masing-masing) ===== -->
+<script src="data/users.js"></script>
+<script src="data/siswa.js"></script>
+<script src="data/guru-bk.js"></script>
+<script src="data/wakasek-kesiswaan.js"></script>
+<script src="data/kurikulum.js"></script>
+<script src="data/humas.js"></script>
+<script src="data/sarpras.js"></script>
+<script src="data/tata-usaha.js"></script>
+<script src="data/osis.js"></script>
+<script src="data/pramuka.js"></script>
+<script src="data/pmr.js"></script>
+<script src="data/paskibra.js"></script>
+<script src="data/laporan-organisasi.js"></script>
+
+<script>
+/* =========================================================
+   APP LOGIC — login, routing antar dashboard, render tabel/form
+   ========================================================= */
+(function(){
+
+  const CONFIG = {
+    schoolName: "SMA Negeri 1 Harapan Bangsa" // ganti nama sekolah di sini
+  };
+
+  const $  = (sel, root) => (root||document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root||document).querySelectorAll(sel));
+
+  function escapeHtml(str){
+    return String(str==null?"":str).replace(/[&<>"']/g, s => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[s]));
+  }
+
+  function fmtDate(iso){
+    if(!iso) return "-";
+    const d = new Date(iso+"T00:00:00");
+    if(isNaN(d)) return iso;
+    return d.toLocaleDateString("id-ID", {day:"2-digit", month:"short", year:"numeric"});
+  }
+
+  function rupiah(n){
+    return "Rp " + Number(n||0).toLocaleString("id-ID");
+  }
+
+  function badgeClass(status){
+    const s = String(status||"").toLowerCase();
+    if(/(selesai|baik|aktif|juara)/.test(s)) return "badge-green";
+    if(/(proses|perlu perbaikan|diproses|persiapan|menunggu|direncanakan|peringatan|sedang)/.test(s)) return "badge-amber";
+    if(/(berat|rusak|skorsing|tinggi)/.test(s)) return "badge-red";
+    return "badge-gray";
+  }
+  function badge(status){
+    return `<span class="badge ${badgeClass(status)}">${escapeHtml(status)}</span>`;
+  }
+
+  // Ikon edit & hapus untuk kolom "Aksi" pada tabel.
+  const ICON_EDIT = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`;
+  const ICON_DELETE = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`;
+  const ICON_DOWNLOAD = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+  // Ikon baru untuk lampiran: Lihat (mata) & Ganti file (panah berputar).
+  const ICON_VIEW = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const ICON_REPLACE = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`;
+
+  // Menyimpan referensi baris (beserta konfigurasi field & storage key-nya)
+  // yang sedang tampil di layar, supaya tombol edit/hapus tahu data apa
+  // yang harus dibuka/dihapus tanpa menaruh seluruh objek di atribut HTML.
+  const ROW_REGISTRY = {};
+  // Menyimpan referensi catatan (LPJ / catatan pemantauan dengan lampiran)
+  // yang sedang tampil, supaya tombol "Ganti file" tahu ke storage key +
+  // _id mana perubahan lampiran harus disimpan.
+  const ATTACHMENT_REGISTRY = {};
+
+  /* ---------------- Data siswa terpusat (data/siswa.js) ---------------- */
+  // data/siswa.js sekarang hanya berisi teks mentah SISWA_RAW dengan format
+  // "NISN@Nama@Kelas" per entri, dan antar-entri dipisahkan simbol 🚟
+  // (bukan array objek JavaScript, dan bukan baris baru). Kode di bawah
+  // ini mengubah teks tersebut menjadi SISWA_LIST — array objek
+  // {nisn, nama, kelas} yang dipakai oleh seluruh dashboard.
+  let SISWA_LIST = [];
+  if(typeof SISWA_RAW !== "undefined"){
+    SISWA_LIST = SISWA_RAW
+      .split("🚟")
+      .map(entry => entry.trim())
+      .filter(entry => entry.length > 0)
+      .map(entry => {
+        const parts = entry.split("@");
+        return {
+          nisn: (parts[0] || "").trim(),
+          nama: (parts[1] || "").trim(),
+          kelas: (parts[2] || "").trim()
+        };
+      });
+  }
+
+  // Dipakai untuk mengisi dropdown "pilih siswa" di form Guru BK,
+  // Wakasek Kesiswaan, dan Organisasi Siswa, supaya nama & kelas selalu
+  // konsisten dengan data induk dan tidak perlu diketik ulang.
+  function findSiswaByNisn(nisn){
+    return SISWA_LIST.find(s => s.nisn === nisn) || null;
+  }
+
+  /* ---------------- localStorage layer untuk data tambahan ---------------- */
+  // extra_<key>   : daftar data yang ditambahkan lewat form "Tambah data"
+  // deleted_<key> : daftar _id baris (baik data bawaan maupun data tambahan)
+  //                 yang sudah dihapus lewat tombol hapus
+  // edits_<key>   : { _id: { field: valueBaru, ... } } — perubahan dari tombol edit
+  function getExtra(key){
+    try{ return JSON.parse(localStorage.getItem("extra_"+key) || "[]"); }
+    catch(e){ return []; }
+  }
+  // opts.append = true  -> data baru diletakkan di URUTAN PALING BAWAH
+  //               (dipakai untuk "Anggota", supaya anggota yang baru
+  //               ditambahkan muncul setelah anggota yang sudah ada).
+  // opts tidak diisi / append=false -> data baru diletakkan di paling atas
+  //               (perilaku lama, dipakai untuk kegiatan/kasus/dll).
+  function addExtra(key, record, opts){
+    opts = opts || {};
+    const list = getExtra(key);
+    record._id = "x" + Date.now() + Math.random().toString(36).slice(2,7);
+    if(opts.append){ list.push(record); } else { list.unshift(record); }
+    localStorage.setItem("extra_"+key, JSON.stringify(list));
+    return record._id;
+  }
+  function getDeletedIds(key){
+    try{ return JSON.parse(localStorage.getItem("deleted_"+key) || "[]"); }
+    catch(e){ return []; }
+  }
+  function markDeleted(key, id){
+    const list = getDeletedIds(key);
+    if(list.indexOf(id) === -1){
+      list.push(id);
+      localStorage.setItem("deleted_"+key, JSON.stringify(list));
+    }
+  }
+  function getEditOverrides(key){
+    try{ return JSON.parse(localStorage.getItem("edits_"+key) || "{}"); }
+    catch(e){ return {}; }
+  }
+  function saveEditOverride(key, id, patch){
+    const overrides = getEditOverrides(key);
+    overrides[id] = Object.assign({}, overrides[id]||{}, patch);
+    localStorage.setItem("edits_"+key, JSON.stringify(overrides));
+  }
+  function withExtra(key, base){
+    const deleted = getDeletedIds(key);
+    const overrides = getEditOverrides(key);
+    const extraList = getExtra(key); // sudah punya _id ("x...")
+    const baseList = base.map((row, i)=> Object.assign({}, row, {_id:"b"+i, _isBase:true}));
+    let combined = extraList.concat(baseList);
+    if(deleted.length){
+      combined = combined.filter(row => deleted.indexOf(row._id) === -1);
+    }
+    combined = combined.map(row => overrides[row._id] ? Object.assign({}, row, overrides[row._id]) : row);
+    return combined;
+  }
+  // Sama seperti withExtra, tapi data BAWAAN ditampilkan lebih dulu dan
+  // data TAMBAHAN (baru) diletakkan setelahnya — dipakai untuk daftar
+  // "Anggota" supaya anggota yang baru diinput muncul paling bawah.
+  function withExtraAppend(key, base){
+    const deleted = getDeletedIds(key);
+    const overrides = getEditOverrides(key);
+    const extraList = getExtra(key); // sudah punya _id ("x...")
+    const baseList = base.map((row, i)=> Object.assign({}, row, {_id:"b"+i, _isBase:true}));
+    let combined = baseList.concat(extraList);
+    if(deleted.length){
+      combined = combined.filter(row => deleted.indexOf(row._id) === -1);
+    }
+    combined = combined.map(row => overrides[row._id] ? Object.assign({}, row, overrides[row._id]) : row);
+    return combined;
+  }
+
+  /* ---------------- render tabel generik ---------------- */
+  // actionsConfig (opsional): { key, title, fields }
+  // Jika diisi, tabel mendapat kolom "Aksi" di ujung kanan (setelah kolom
+  // terakhir, mis. kolom Status) berisi ikon edit & hapus per baris.
+  function renderTable(rows, columns, actionsConfig){
+    if(!rows || rows.length===0){
+      return `<div class="table-wrap"><div class="empty-state">Belum ada data untuk ditampilkan.</div></div>`;
+    }
+    const thead = columns.map(c=>`<th>${escapeHtml(c.label)}</th>`).join("")
+      + (actionsConfig ? `<th>Aksi</th>` : "");
+    const tbody = rows.map(row=>{
+      const tds = columns.map(c=>{
+        let val = row[c.key];
+        if(c.type==="date") return `<td class="cell-date">${fmtDate(val)}</td>`;
+        if(c.type==="status") return `<td>${badge(val)}</td>`;
+        if(c.type==="currency") return `<td>${rupiah(val)}</td>`;
+        const display = (val===undefined || val===null || val==="") ? "–" : escapeHtml(val);
+        return `<td>${display}</td>`;
+      }).join("");
+      let actionTd = "";
+      if(actionsConfig){
+        const rowId = row._id;
+        ROW_REGISTRY[rowId] = {
+          row, key: actionsConfig.key, fields: actionsConfig.fields,
+          title: actionsConfig.title || "data ini"
+        };
+        actionTd = `<td><div class="row-actions">
+            <button type="button" class="icon-btn icon-edit" data-action="edit" data-id="${escapeHtml(String(rowId))}" title="Edit data" aria-label="Edit data">${ICON_EDIT}</button>
+            <button type="button" class="icon-btn icon-delete" data-action="delete" data-id="${escapeHtml(String(rowId))}" title="Hapus data" aria-label="Hapus data">${ICON_DELETE}</button>
+          </div></td>`;
+      }
+      return `<tr>${tds}${actionTd}</tr>`;
+    }).join("");
+    return `<div class="table-wrap"><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>`;
+  }
+
+  function statCard(num, label){
+    return `<div class="stat-card"><div class="num">${escapeHtml(num)}</div><div class="lbl">${escapeHtml(label)}</div></div>`;
+  }
+
+  function sectionHead(title, hint){
+    return `<div class="section-head"><h3>${escapeHtml(title)}</h3>${hint?`<span class="hint">${escapeHtml(hint)}</span>`:""}</div>`;
+  }
+
+  /* =========================================================
+     LAMPIRAN — render blok "Lihat / Ganti file / Unduh" untuk
+     satu catatan (LPJ). Nama file TIDAK lagi berupa link yang
+     bisa diklik; hanya berupa teks, sementara aksinya lewat ikon.
+     ========================================================= */
+  function renderAttachmentBlock(storageKey, note){
+    const lamp = note.lampiran;
+    // Daftarkan catatan ini supaya event handler tombol "Ganti file"
+    // tahu ke storage key + _id mana perubahan harus disimpan.
+    ATTACHMENT_REGISTRY[note._id] = { storageKey, note };
+
+    const inputHtml = `<input type="file" data-role="attachment-replace-input" data-note-id="${escapeHtml(String(note._id))}" hidden
+        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">`;
+
+    if(!lamp || !lamp.dataUrl){
+      return `<div class="attachment-empty">
+          <div class="student-hint" style="margin-bottom:8px;">Belum ada lampiran untuk catatan ini.</div>
+          <button type="button" class="icon-btn icon-replace" data-action="attachment-replace" data-note-id="${escapeHtml(String(note._id))}" title="Unggah lampiran" aria-label="Unggah lampiran">${ICON_REPLACE}</button>
+          ${inputHtml}
+        </div>`;
+    }
+
+    return `<div class="attachment-row">
+        <div class="attachment-name">${escapeHtml(lamp.fileName || "Lampiran")}<span class="fname-sub">Lampiran laporan</span></div>
+        <div class="attachment-actions">
+          <a class="icon-btn icon-view" href="${lamp.dataUrl}" target="_blank" rel="noopener" title="Lihat lampiran" aria-label="Lihat lampiran">${ICON_VIEW}</a>
+          <button type="button" class="icon-btn icon-replace" data-action="attachment-replace" data-note-id="${escapeHtml(String(note._id))}" title="Ganti file lampiran" aria-label="Ganti file lampiran">${ICON_REPLACE}</button>
+          <a class="icon-btn icon-download" href="${lamp.dataUrl}" download="${escapeHtml(lamp.fileName||'lampiran')}" title="Unduh lampiran" aria-label="Unduh lampiran">${ICON_DOWNLOAD}</a>
+          ${inputHtml}
+        </div>
+      </div>`;
+  }
+
+  /* =========================================================
+     MODAL: konfirmasi hapus & form edit baris data
+     ========================================================= */
+  function openModal(html){
+    $("#modal-box").innerHTML = html;
+    $("#modal-overlay").hidden = false;
+  }
+  function closeModal(){
+    $("#modal-overlay").hidden = true;
+    $("#modal-box").innerHTML = "";
+  }
+
+  function openDeleteModal(entry){
+    openModal(`
+      <h3>Hapus data ini?</h3>
+      <p class="modal-sub">Tindakan ini tidak bisa dibatalkan. Baris data pada <strong>${escapeHtml(entry.title)}</strong> akan dihapus secara permanen dari daftar.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" data-modal-close>Batal</button>
+        <button type="button" class="btn btn-danger" id="confirm-delete-btn">Ya, hapus data</button>
+      </div>`);
+    $("#confirm-delete-btn").addEventListener("click", function(){
+      markDeleted(entry.key, entry.row._id);
+      closeModal();
+      renderRoute(currentView);
+    });
+  }
+
+  function openEditModal(entry){
+    const { row, fields } = entry;
+    const inputs = fields.map(f=>{
+      const cls = f.full ? "full" : "";
+      const currentVal = row[f.name] !== undefined && row[f.name] !== null ? row[f.name] : "";
+      if(f.type==="student-select"){
+        const label = row.siswa ? `${row.siswa}${row.kelas ? " — "+row.kelas : ""}` : "-";
+        return `<div class="field ${cls}">
+            <label>${escapeHtml(f.label)}</label>
+            <input type="text" value="${escapeHtml(label)}" disabled>
+            <div class="student-hint">Siswa tidak dapat diganti lewat form edit — hapus &amp; tambahkan ulang jika salah pilih.</div>
+          </div>`;
+      }
+      if(f.type==="select"){
+        const opts = f.options.map(o=>`<option value="${escapeHtml(o)}" ${o===currentVal?"selected":""}>${escapeHtml(o)}</option>`).join("");
+        return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><select name="${f.name}">${opts}</select></div>`;
+      }
+      if(f.type==="textarea"){
+        return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><textarea name="${f.name}" rows="3">${escapeHtml(currentVal)}</textarea></div>`;
+      }
+      if(f.type==="end-date"){
+        const isEnabled = String(row.status||"") === "Selesai";
+        return `<div class="field ${cls}">
+            <label>${escapeHtml(f.label)}</label>
+            <input type="date" name="${f.name}" data-role="conditional-date" value="${escapeHtml(currentVal)}" ${isEnabled?"":"disabled"}>
+            <div class="student-hint" data-conditional-hint>${isEnabled?"":'Isi tanggal selesai setelah status diubah menjadi "Selesai".'}</div>
+          </div>`;
+      }
+      if(f.type==="file"){
+        return `<div class="field ${cls} full">
+            <label>${escapeHtml(f.label)}</label>
+            <input type="text" value="${row[f.name] && row[f.name].fileName ? escapeHtml(row[f.name].fileName) : 'Tidak ada lampiran'}" disabled>
+            <div class="student-hint">Lampiran tidak dapat diganti lewat form edit — gunakan ikon "Ganti file" pada daftar untuk mengganti lampiran.</div>
+          </div>`;
+      }
+      return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><input type="${f.type||'text'}" name="${f.name}" value="${escapeHtml(currentVal)}"></div>`;
+    }).join("");
+
+    openModal(`
+      <h3>Edit data</h3>
+      <p class="modal-sub">Perbarui data pada <strong>${escapeHtml(entry.title)}</strong>, lalu simpan.</p>
+      <form id="edit-row-form" novalidate>
+        <div class="form-grid">${inputs}</div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" data-modal-close>Batal</button>
+          <button type="submit" class="btn btn-gold">Simpan perubahan</button>
+        </div>
+      </form>`);
+
+    $("#edit-row-form").addEventListener("submit", function(e){
+      e.preventDefault();
+      const patch = {};
+      fields.forEach(f=>{
+        if(f.type==="student-select" || f.type==="file") return; // identitas siswa & lampiran tidak diedit di sini
+        const el = e.target.elements[f.name];
+        if(el) patch[f.name] = el.value;
+      });
+      saveEditOverride(entry.key, row._id, patch);
+      closeModal();
+      renderRoute(currentView);
+    });
+  }
+
+  /* =========================================================
+     KONFIGURASI FORM TAMBAH DATA per-divisi
+     ========================================================= */
+  function addForm(formId, title, fields){
+    const inputs = fields.map(f=>{
+      const cls = f.full ? "full" : "";
+      if(f.type==="student-select"){
+        return `<div class="field ${cls}">
+            <label>${escapeHtml(f.label)}</label>
+            <div class="student-combo">
+              <input type="text" data-role="student-search" data-target="${f.name}"
+                     placeholder="Ketik nama atau NISN siswa..." autocomplete="off">
+              <input type="hidden" name="${f.name}" data-role="student-value">
+              <div class="student-suggestions" data-suggestions-for="${f.name}" hidden></div>
+            </div>
+            <div class="student-hint" data-hint-for="${f.name}"></div>
+          </div>`;
+      }
+      if(f.type==="select"){
+        const opts = f.options.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+        return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><select name="${f.name}">${opts}</select></div>`;
+      }
+      if(f.type==="textarea"){
+        return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><textarea name="${f.name}" rows="2"></textarea></div>`;
+      }
+      if(f.type==="end-date"){
+        return `<div class="field ${cls}">
+            <label>${escapeHtml(f.label)}</label>
+            <input type="date" name="${f.name}" data-role="conditional-date" disabled>
+            <div class="student-hint" data-conditional-hint>Isi tanggal selesai setelah status diubah menjadi "Selesai".</div>
+          </div>`;
+      }
+      if(f.type==="file"){
+        return `<div class="field ${cls} full">
+            <label>${escapeHtml(f.label)}</label>
+            <input type="file" name="${f.name}" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+            <div class="student-hint">Format yang didukung: PDF atau Word (.doc/.docx), maksimal 4 MB.</div>
+          </div>`;
+      }
+      return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><input type="${f.type||'text'}" name="${f.name}" ${f.type==='date' ? '' : ''}></div>`;
+    }).join("");
+    return `
+      <details class="add-box">
+        <summary>${escapeHtml(title)}</summary>
+        <div class="add-box-body">
+          <form data-form-id="${formId}">
+            <div class="form-grid">${inputs}</div>
+            <button type="submit" class="btn btn-gold">Simpan data</button>
+          </form>
+        </div>
+      </details>`;
+  }
+
+  /* =========================================================
+     REGISTRY FORM: apa yang terjadi saat tiap form disubmit
+     ========================================================= */
+  const FORM_HANDLERS = {
+    "bk-kasus": (data)=>{
+      const siswa = findSiswaByNisn(data.siswaNisn);
+      addExtra("guru_bk_kasus", {
+        tanggal:data.tanggal, nisn:data.siswaNisn,
+        siswa: siswa ? siswa.nama : "(siswa tidak ditemukan)",
+        kelas: siswa ? siswa.kelas : "-",
+        kategori:data.kategori, uraian:data.uraian,
+        tindakLanjut:data.tindakLanjut, status:data.status
+      });
+    },
+    "kesiswaan-pelanggaran": (data)=>{
+      const siswa = findSiswaByNisn(data.siswaNisn);
+      addExtra("kesiswaan_pelanggaran", {
+        tanggal:data.tanggal, nisn:data.siswaNisn,
+        siswa: siswa ? siswa.nama : "(siswa tidak ditemukan)",
+        kelas: siswa ? siswa.kelas : "-",
+        jenis:data.jenis, poin:data.poin, status:data.status
+      });
+    },
+    "kesiswaan-prestasi": (data)=>{
+      const siswa = findSiswaByNisn(data.siswaNisn);
+      addExtra("kesiswaan_prestasi", {
+        tanggal:data.tanggal, nisn:data.siswaNisn,
+        siswa: siswa ? siswa.nama : "(siswa tidak ditemukan)",
+        kelas: siswa ? siswa.kelas : "-",
+        bidang:data.bidang, tingkat:data.tingkat, capaian:data.capaian
+      });
+    },
+    "kurikulum-ujian": (data)=>{
+      addExtra("kurikulum_jadwal", {
+        nama:data.nama, kelas:data.kelas, tanggal:data.tanggal, status:data.status
+      });
+    },
+    "humas-kegiatan": (data)=>{
+      addExtra("humas_kegiatan", {
+        tanggal:data.tanggal, nama:data.nama, lokasi:data.lokasi,
+        pic:data.pic, status:data.status
+      });
+    },
+    "humas-publikasi": (data)=>{
+      addExtra("humas_publikasi", {
+        tanggal:data.tanggal, judul:data.judul, kanal:data.kanal
+      });
+    },
+    "sarpras-pengajuan": (data)=>{
+      addExtra("sarpras_pengajuan", {
+        tanggal:data.tanggal, item:data.item, pemohon:data.pemohon,
+        prioritas:data.prioritas, status:data.status
+      });
+    },
+    "tu-surat-masuk": (data)=>{
+      addExtra("tu_surat_masuk", {
+        tanggal:data.tanggal, nomorSurat:data.nomorSurat, asal:data.asal,
+        perihal:data.perihal, status:data.status
+      });
+    },
+    "tu-surat-keluar": (data)=>{
+      addExtra("tu_surat_keluar", {
+        tanggal:data.tanggal, nomorSurat:data.nomorSurat, tujuan:data.tujuan,
+        perihal:data.perihal, status:data.status
+      });
+    },
+    "tu-administrasi-siswa": (data)=>{
+      addExtra("tu_administrasi_siswa", {
+        tanggal:data.tanggal, siswa:data.siswa, kelas:data.kelas,
+        jenis:data.jenis, keterangan:data.keterangan
+      });
+    },
+    "tu-keuangan": (data)=>{
+      addExtra("tu_keuangan", {
+        tanggal:data.tanggal, siswa:data.siswa, kelas:data.kelas,
+        keterangan:data.keterangan, nominal:data.nominal, status:data.status
+      });
+    },
+    "catatan-pemantauan": (data, user)=>{
+      const list = getExtra("catatan_pemantauan");
+      list.unshift({
+        tanggal:new Date().toISOString().slice(0,10),
+        oleh:user.name, jabatan:ROLE_INFO[user.role].label, isi:data.isi
+      });
+      localStorage.setItem("extra_catatan_pemantauan", JSON.stringify(list));
+    }
+  };
+
+  /* =========================================================
+     DATA GETTERS gabungan (data dasar + tambahan lokal)
+     ========================================================= */
+  const getKasusBK        = ()=> withExtra("guru_bk_kasus", DATA_GURU_BK.kasus);
+  const getPelanggaran    = ()=> withExtra("kesiswaan_pelanggaran", DATA_KESISWAAN.pelanggaran);
+  const getPrestasi       = ()=> withExtra("kesiswaan_prestasi", DATA_KESISWAAN.prestasi);
+  const getJadwalUjian    = ()=> withExtra("kurikulum_jadwal", DATA_KURIKULUM.jadwalUjian);
+  const getKegiatanHumas  = ()=> withExtra("humas_kegiatan", DATA_HUMAS.kegiatan);
+  const getPublikasiHumas = ()=> withExtra("humas_publikasi", DATA_HUMAS.publikasi);
+  const getPengajuanSarpras = ()=> withExtra("sarpras_pengajuan", DATA_SARPRAS.pengajuanPerbaikan);
+  const getCatatanPemantauan = ()=> getExtra("catatan_pemantauan");
+  const getSuratMasuk        = ()=> withExtra("tu_surat_masuk", DATA_TATA_USAHA.suratMasuk);
+  const getSuratKeluar       = ()=> withExtra("tu_surat_keluar", DATA_TATA_USAHA.suratKeluar);
+  const getAdministrasiSiswa = ()=> withExtra("tu_administrasi_siswa", DATA_TATA_USAHA.administrasiSiswa);
+  const getKeuangan          = ()=> withExtra("tu_keuangan", DATA_TATA_USAHA.keuangan);
+
+  /* =========================================================
+     DEFINISI FIELD FORM (dipakai bersama oleh form "Tambah data"
+     dan form "Edit data" pada modal, supaya selalu konsisten)
+     ========================================================= */
+  const FIELDS_BK_KASUS = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"siswaNisn",label:"Nama Siswa",type:"student-select"},
+    {name:"kategori",label:"Kategori",type:"select",options:["Pelanggaran Ringan","Pelanggaran Sedang","Pelanggaran Berat","Masalah Pribadi","Masalah Keluarga","Akademik","Sosial"]},
+    {name:"tindakLanjut",label:"Tindak lanjut"},
+    {name:"status",label:"Status",type:"select",options:["Proses","Pemantauan","Selesai"]},
+    {name:"uraian",label:"Uraian kasus",type:"textarea",full:true}
+  ];
+  const FIELDS_KESISWAAN_PELANGGARAN = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"siswaNisn",label:"Nama Siswa",type:"student-select"},
+    {name:"jenis",label:"Jenis pelanggaran",full:true},
+    {name:"poin",label:"Poin pelanggaran",type:"number"},
+    {name:"status",label:"Status",type:"select",options:["Peringatan","Ditindaklanjuti","Skorsing"]}
+  ];
+  const FIELDS_KESISWAAN_PRESTASI = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"siswaNisn",label:"Nama Siswa / Ketua Tim",type:"student-select"},
+    {name:"bidang",label:"Bidang lomba",full:true},
+    {name:"tingkat",label:"Tingkat",type:"select",options:["Sekolah","Kota","Kabupaten","Provinsi","Nasional","Internasional"]},
+    {name:"capaian",label:"Capaian",type:"select",options:["Juara 1","Juara 2","Juara 3","Harapan 1","Peserta Terbaik"]}
+  ];
+  const FIELDS_KURIKULUM_UJIAN = [
+    {name:"nama",label:"Nama ujian",full:true},
+    {name:"kelas",label:"Kelas sasaran"},
+    {name:"tanggal",label:"Jadwal (teks bebas)"},
+    {name:"status",label:"Status",type:"select",options:["Direncanakan","Persiapan","Berlangsung","Selesai"]}
+  ];
+  const FIELDS_HUMAS_KEGIATAN = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"nama",label:"Nama kegiatan",full:true},
+    {name:"lokasi",label:"Lokasi"},
+    {name:"pic",label:"Penanggung jawab"},
+    {name:"status",label:"Status",type:"select",options:["Direncanakan","Berlangsung","Selesai"]}
+  ];
+  const FIELDS_HUMAS_PUBLIKASI = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"judul",label:"Judul publikasi",full:true},
+    {name:"kanal",label:"Kanal",type:"select",options:["Website Sekolah","Instagram Sekolah","Instagram & Website","Media Cetak Lokal"]}
+  ];
+  const FIELDS_SARPRAS_PENGAJUAN = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"item",label:"Item / lokasi rusak",full:true},
+    {name:"pemohon",label:"Pemohon"},
+    {name:"prioritas",label:"Prioritas",type:"select",options:["Rendah","Sedang","Tinggi"]},
+    {name:"status",label:"Status",type:"select",options:["Diproses","Menunggu Anggaran","Selesai"]}
+  ];
+  const FIELDS_TU_SURAT_MASUK = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"nomorSurat",label:"Nomor surat"},
+    {name:"asal",label:"Asal surat"},
+    {name:"perihal",label:"Perihal",full:true},
+    {name:"status",label:"Status",type:"select",options:["Menunggu Disposisi","Diproses","Diarsipkan"]}
+  ];
+  const FIELDS_TU_SURAT_KELUAR = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"nomorSurat",label:"Nomor surat"},
+    {name:"tujuan",label:"Tujuan surat"},
+    {name:"perihal",label:"Perihal",full:true},
+    {name:"status",label:"Status",type:"select",options:["Draft","Terkirim"]}
+  ];
+  const FIELDS_TU_ADMINISTRASI = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"siswa",label:"Nama siswa"},
+    {name:"kelas",label:"Kelas"},
+    {name:"jenis",label:"Jenis",type:"select",options:["Siswa Baru","Mutasi Masuk","Mutasi Keluar","Update Data"]},
+    {name:"keterangan",label:"Keterangan",type:"textarea",full:true}
+  ];
+  const FIELDS_TU_KEUANGAN = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"siswa",label:"Nama siswa"},
+    {name:"kelas",label:"Kelas"},
+    {name:"keterangan",label:"Keterangan pembayaran",full:true},
+    {name:"nominal",label:"Nominal (contoh: Rp 350.000)"},
+    {name:"status",label:"Status",type:"select",options:["Lunas","Cicilan","Belum Lunas"]}
+  ];
+
+  /* =========================================================
+     PENCARIAN / FILTER — dipakai bersama oleh tampilan Kasus BK
+     (Guru BK, Pemantauan Kepsek/Pengawas, dan Laporan BK di
+     Wakasek Kesiswaan) supaya bisa menyeleksi berdasarkan
+     NISN, nama, atau kelas siswa tanpa menduplikasi kode.
+     ========================================================= */
+  function filterRowsBySearch(rows, query, fields){
+    const q = String(query||"").trim().toLowerCase();
+    if(!q) return rows;
+    return rows.filter(row => fields.some(f => String(row[f]||"").toLowerCase().includes(q)));
+  }
+
+  // Kolom tabel Kasus BK — NISN sengaja TIDAK ditampilkan sebagai kolom
+  // (disembunyikan dari tampilan), tapi datanya tetap dipakai untuk
+  // pencarian lewat kotak seleksi di atas tabel.
+  function renderKasusBKTable(withActions){
+    const rows = filterRowsBySearch(getKasusBK(), bkKasusFilter, ["nisn","siswa","kelas"]);
+    const columns = [
+      {key:"tanggal",label:"Tanggal",type:"date"},
+      {key:"siswa",label:"Siswa"},
+      {key:"kelas",label:"Kelas"},
+      {key:"kategori",label:"Kategori"},
+      {key:"uraian",label:"Uraian"},
+      {key:"tindakLanjut",label:"Tindak Lanjut"},
+      {key:"status",label:"Status",type:"status"}
+    ];
+    return renderTable(rows, columns, withActions ? {key:"guru_bk_kasus", title:"Kasus BK", fields:FIELDS_BK_KASUS} : null);
+  }
+
+  // Kotak teks untuk menyeleksi kasus BK berdasarkan NISN, nama, atau kelas siswa.
+  function bkKasusFilterBox(){
+    return `<div class="field" style="max-width:420px;">
+        <label>Cari kasus (NISN / Nama / Kelas siswa)</label>
+        <input type="text" data-role="bk-kasus-filter-input" placeholder="Ketik NISN, nama, atau kelas siswa..." value="${escapeHtml(bkKasusFilter)}">
+      </div>`;
+  }
+
+  /* =========================================================
+     VIEW BUILDERS — satu fungsi per "tab" tiap divisi
+     ========================================================= */
+  const VIEWS = {};
+
+  /* ---------- GURU BK ---------- */
+  VIEWS.bk_ringkasan = ()=>{
+    const kasus = getKasusBK();
+    const selesai = kasus.filter(k=>k.status==="Selesai").length;
+    const proses  = kasus.filter(k=>k.status==="Proses").length;
+    const pantau  = kasus.filter(k=>k.status==="Pemantauan").length;
+    return `
+      <div class="stat-grid">
+        ${statCard(kasus.length, "Total Kasus BK")}
+        ${statCard(selesai, "Kasus Selesai")}
+        ${statCard(proses, "Dalam Proses")}
+        ${statCard(pantau, "Dalam Pemantauan")}
+      </div>
+      <div class="section">
+        ${sectionHead("Kasus terbaru", "5 kasus paling baru dicatat")}
+        ${renderTable(kasus.slice(0,5), [
+          {key:"tanggal",label:"Tanggal",type:"date"},
+          {key:"siswa",label:"Siswa"},
+          {key:"kelas",label:"Kelas"},
+          {key:"kategori",label:"Kategori"},
+          {key:"status",label:"Status",type:"status"}
+        ])}
+      </div>`;
+  };
+  VIEWS.bk_kasus = ()=>{
+    return `
+      ${addForm("bk-kasus","Tambah catatan kasus BK", FIELDS_BK_KASUS)}
+      ${bkKasusFilterBox()}
+      <div data-role="bk-kasus-table-container" data-with-actions="true" style="margin-top:16px;">${renderKasusBKTable(true)}</div>`;
+  };
+  VIEWS.bk_jadwal = ()=> renderTable(DATA_GURU_BK.jadwalKonseling, [
+    {key:"hari",label:"Hari"},{key:"waktu",label:"Waktu"},{key:"agenda",label:"Agenda"}
+  ]);
+
+  /* ---------- WAKASEK KESISWAAN ---------- */
+  VIEWS.kesiswaan_ringkasan = ()=>{
+    const r = DATA_KESISWAAN.ringkasan;
+    return `
+      <div class="stat-grid">
+        ${statCard(r.totalSiswa,"Total Siswa")}
+        ${statCard(getPelanggaran().length,"Catatan Pelanggaran")}
+        ${statCard(getPrestasi().length,"Catatan Prestasi")}
+        ${statCard(r.ekstrakurikulerAktif,"Ekstrakurikuler Aktif")}
+      </div>
+      <div class="section">
+        ${sectionHead("Pelanggaran terbaru")}
+        ${renderTable(getPelanggaran().slice(0,5), [
+          {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},
+          {key:"kelas",label:"Kelas"},{key:"jenis",label:"Jenis"},{key:"status",label:"Status",type:"status"}
+        ])}
+      </div>
+      <div class="section">
+        ${sectionHead("Prestasi terbaru")}
+        ${renderTable(getPrestasi().slice(0,5), [
+          {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},
+          {key:"bidang",label:"Bidang"},{key:"tingkat",label:"Tingkat"},{key:"capaian",label:"Capaian",type:"status"}
+        ])}
+      </div>`;
+  };
+  VIEWS.kesiswaan_pelanggaran = ()=>`
+      ${addForm("kesiswaan-pelanggaran","Catat pelanggaran siswa", FIELDS_KESISWAAN_PELANGGARAN)}
+      ${renderTable(getPelanggaran(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"nisn",label:"NISN"},{key:"siswa",label:"Siswa"},{key:"kelas",label:"Kelas"},
+        {key:"jenis",label:"Jenis"},{key:"poin",label:"Poin"},{key:"status",label:"Status",type:"status"}
+      ], {key:"kesiswaan_pelanggaran", title:"Pelanggaran Siswa", fields:FIELDS_KESISWAAN_PELANGGARAN})}`;
+  VIEWS.kesiswaan_prestasi = ()=>`
+      ${addForm("kesiswaan-prestasi","Catat prestasi siswa", FIELDS_KESISWAAN_PRESTASI)}
+      ${renderTable(getPrestasi(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"nisn",label:"NISN"},{key:"siswa",label:"Siswa"},{key:"kelas",label:"Kelas"},
+        {key:"bidang",label:"Bidang"},{key:"tingkat",label:"Tingkat"},{key:"capaian",label:"Capaian",type:"status"}
+      ], {key:"kesiswaan_prestasi", title:"Prestasi Siswa", fields:FIELDS_KESISWAAN_PRESTASI})}`;
+  VIEWS.kesiswaan_ekskul = ()=> renderTable(DATA_KESISWAAN.ekstrakurikuler, [
+    {key:"nama",label:"Ekstrakurikuler"},{key:"pembina",label:"Pembina"},
+    {key:"jadwal",label:"Jadwal"},{key:"anggota",label:"Jumlah Anggota"}
+  ]);
+  // Laporan BK — tampilan pemantauan (baca saja, tanpa tombol edit/hapus)
+  // supaya Wakasek Kesiswaan bisa mengamati kegiatan/kasus yang ditangani Guru BK.
+  VIEWS.kesiswaan_laporan_bk = ()=>{
+    return `
+      ${sectionHead("Laporan Kegiatan Guru BK", "Data kasus bimbingan konseling — hanya untuk dipantau")}
+      ${bkKasusFilterBox()}
+      <div data-role="bk-kasus-table-container" data-with-actions="false" style="margin-top:16px;">${renderKasusBKTable(false)}</div>`;
+  };
+
+  /* ---------- KURIKULUM ---------- */
+  VIEWS.kurikulum_ringkasan = ()=>{
+    const r = DATA_KURIKULUM.ringkasan;
+    return `
+      <div class="stat-grid">
+        ${statCard(r.totalMapel,"Mata Pelajaran")}
+        ${statCard(r.guruAktif,"Guru Aktif")}
+        ${statCard(r.rataCapaianKurikulum,"Rata-rata Capaian")}
+        ${statCard(getJadwalUjian().length,"Agenda Ujian Tercatat")}
+      </div>
+      <div class="section">
+        ${sectionHead("Agenda ujian terdekat")}
+        ${renderTable(getJadwalUjian().slice(0,5), [
+          {key:"nama",label:"Nama Ujian"},{key:"kelas",label:"Kelas"},
+          {key:"tanggal",label:"Jadwal"},{key:"status",label:"Status",type:"status"}
+        ])}
+      </div>`;
+  };
+  VIEWS.kurikulum_ujian = ()=>`
+      ${addForm("kurikulum-ujian","Tambah agenda ujian / penilaian", FIELDS_KURIKULUM_UJIAN)}
+      ${renderTable(getJadwalUjian(), [
+        {key:"nama",label:"Nama Ujian"},{key:"kelas",label:"Kelas"},
+        {key:"tanggal",label:"Jadwal"},{key:"status",label:"Status",type:"status"}
+      ], {key:"kurikulum_jadwal", title:"Agenda Ujian", fields:FIELDS_KURIKULUM_UJIAN})}`;
+  VIEWS.kurikulum_capaian = ()=> renderTable(DATA_KURIKULUM.capaianKurikulum, [
+    {key:"mapel",label:"Mata Pelajaran"},{key:"kelas",label:"Kelas"},
+    {key:"targetBab",label:"Target Bab"},{key:"tercapai",label:"Tercapai"},{key:"persentase",label:"Persentase",type:"status"}
+  ]);
+  VIEWS.kurikulum_mapel = ()=> renderTable(DATA_KURIKULUM.mataPelajaran, [
+    {key:"nama",label:"Mata Pelajaran"},{key:"rumpun",label:"Rumpun"},{key:"jamPerMinggu",label:"Jam / Minggu"}
+  ]);
+
+  /* ---------- HUMAS ---------- */
+  VIEWS.humas_ringkasan = ()=>{
+    const r = DATA_HUMAS.ringkasan;
+    return `
+      <div class="stat-grid">
+        ${statCard(getKegiatanHumas().length,"Kegiatan Tercatat")}
+        ${statCard(r.mitraAktif,"Mitra Aktif")}
+        ${statCard(getPublikasiHumas().length,"Publikasi Tercatat")}
+      </div>
+      <div class="section">
+        ${sectionHead("Kegiatan terbaru")}
+        ${renderTable(getKegiatanHumas().slice(0,5), [
+          {key:"tanggal",label:"Tanggal",type:"date"},{key:"nama",label:"Kegiatan"},
+          {key:"lokasi",label:"Lokasi"},{key:"status",label:"Status",type:"status"}
+        ])}
+      </div>`;
+  };
+  VIEWS.humas_kegiatan = ()=>`
+      ${addForm("humas-kegiatan","Tambah kegiatan / agenda humas", FIELDS_HUMAS_KEGIATAN)}
+      ${renderTable(getKegiatanHumas(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"nama",label:"Kegiatan"},
+        {key:"lokasi",label:"Lokasi"},{key:"pic",label:"PIC"},{key:"status",label:"Status",type:"status"}
+      ], {key:"humas_kegiatan", title:"Kegiatan Humas", fields:FIELDS_HUMAS_KEGIATAN})}`;
+  VIEWS.humas_kerjasama = ()=> renderTable(DATA_HUMAS.kerjasama, [
+    {key:"mitra",label:"Mitra"},{key:"bidang",label:"Bidang Kerjasama"},
+    {key:"mulai",label:"Sejak"},{key:"status",label:"Status",type:"status"}
+  ]);
+  VIEWS.humas_publikasi = ()=>`
+      ${addForm("humas-publikasi","Tambah publikasi", FIELDS_HUMAS_PUBLIKASI)}
+      ${renderTable(getPublikasiHumas(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"judul",label:"Judul"},{key:"kanal",label:"Kanal"}
+      ], {key:"humas_publikasi", title:"Publikasi Humas", fields:FIELDS_HUMAS_PUBLIKASI})}`;
+
+  /* ---------- SARPRAS ---------- */
+  VIEWS.sarpras_ringkasan = ()=>{
+    const r = DATA_SARPRAS.ringkasan;
+    return `
+      <div class="stat-grid">
+        ${statCard(r.totalAset,"Total Aset")}
+        ${statCard(r.kondisiBaik,"Kondisi Baik")}
+        ${statCard(r.perluPerbaikan,"Perlu Perbaikan")}
+        ${statCard(r.rusakBerat,"Rusak Berat")}
+      </div>
+      <div class="section">
+        ${sectionHead("Pengajuan perbaikan terbaru")}
+        ${renderTable(getPengajuanSarpras().slice(0,5), [
+          {key:"tanggal",label:"Tanggal",type:"date"},{key:"item",label:"Item"},
+          {key:"prioritas",label:"Prioritas",type:"status"},{key:"status",label:"Status",type:"status"}
+        ])}
+      </div>`;
+  };
+  VIEWS.sarpras_inventaris = ()=> renderTable(DATA_SARPRAS.inventaris, [
+    {key:"nama",label:"Nama Aset"},{key:"jumlah",label:"Jumlah"},
+    {key:"kondisi",label:"Kondisi",type:"status"},{key:"lokasi",label:"Lokasi"}
+  ]);
+  VIEWS.sarpras_pengajuan = ()=>`
+      ${addForm("sarpras-pengajuan","Ajukan perbaikan sarana", FIELDS_SARPRAS_PENGAJUAN)}
+      ${renderTable(getPengajuanSarpras(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"item",label:"Item"},{key:"pemohon",label:"Pemohon"},
+        {key:"prioritas",label:"Prioritas",type:"status"},{key:"status",label:"Status",type:"status"}
+      ], {key:"sarpras_pengajuan", title:"Pengajuan Perbaikan Sarpras", fields:FIELDS_SARPRAS_PENGAJUAN})}`;
+  VIEWS.sarpras_kondisi = ()=> renderTable(DATA_SARPRAS.kondisiRuang, [
+    {key:"ruang",label:"Ruang / Fasilitas"},{key:"kondisi",label:"Kondisi",type:"status"},{key:"catatan",label:"Catatan"}
+  ]);
+
+  /* ---------- TATA USAHA ---------- */
+  VIEWS.tu_ringkasan = ()=>{
+    const r = DATA_TATA_USAHA.ringkasan;
+    return `
+      <div class="stat-grid">
+        ${statCard(r.siswaAktif,"Siswa Aktif")}
+        ${statCard(getSuratMasuk().length,"Surat Masuk Tercatat")}
+        ${statCard(getSuratKeluar().length,"Surat Keluar Tercatat")}
+        ${statCard(getKeuangan().length,"Catatan Pembayaran")}
+      </div>
+      <div class="section">
+        ${sectionHead("Surat masuk terbaru")}
+        ${renderTable(getSuratMasuk().slice(0,5), [
+          {key:"tanggal",label:"Tanggal",type:"date"},{key:"nomorSurat",label:"No. Surat"},
+          {key:"asal",label:"Asal"},{key:"perihal",label:"Perihal"},{key:"status",label:"Status",type:"status"}
+        ])}
+      </div>
+      <div class="section">
+        ${sectionHead("Status pembayaran terbaru")}
+        ${renderTable(getKeuangan().slice(0,5), [
+          {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},
+          {key:"keterangan",label:"Keterangan"},{key:"nominal",label:"Nominal"},{key:"status",label:"Status",type:"status"}
+        ])}
+      </div>`;
+  };
+  VIEWS.tu_surat_masuk = ()=>`
+      ${addForm("tu-surat-masuk","Catat surat masuk", FIELDS_TU_SURAT_MASUK)}
+      ${renderTable(getSuratMasuk(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"nomorSurat",label:"No. Surat"},
+        {key:"asal",label:"Asal"},{key:"perihal",label:"Perihal"},{key:"status",label:"Status",type:"status"}
+      ], {key:"tu_surat_masuk", title:"Surat Masuk", fields:FIELDS_TU_SURAT_MASUK})}`;
+  VIEWS.tu_surat_keluar = ()=>`
+      ${addForm("tu-surat-keluar","Catat surat keluar", FIELDS_TU_SURAT_KELUAR)}
+      ${renderTable(getSuratKeluar(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"nomorSurat",label:"No. Surat"},
+        {key:"tujuan",label:"Tujuan"},{key:"perihal",label:"Perihal"},{key:"status",label:"Status",type:"status"}
+      ], {key:"tu_surat_keluar", title:"Surat Keluar", fields:FIELDS_TU_SURAT_KELUAR})}`;
+  VIEWS.tu_administrasi = ()=>`
+      ${addForm("tu-administrasi-siswa","Catat administrasi siswa", FIELDS_TU_ADMINISTRASI)}
+      ${renderTable(getAdministrasiSiswa(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},{key:"kelas",label:"Kelas"},
+        {key:"jenis",label:"Jenis",type:"status"},{key:"keterangan",label:"Keterangan"}
+      ], {key:"tu_administrasi_siswa", title:"Administrasi Siswa", fields:FIELDS_TU_ADMINISTRASI})}`;
+  VIEWS.tu_keuangan = ()=>`
+      ${addForm("tu-keuangan","Catat pembayaran / transaksi", FIELDS_TU_KEUANGAN)}
+      ${renderTable(getKeuangan(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},{key:"kelas",label:"Kelas"},
+        {key:"keterangan",label:"Keterangan"},{key:"nominal",label:"Nominal"},{key:"status",label:"Status",type:"status"}
+      ], {key:"tu_keuangan", title:"Keuangan / Pembayaran Siswa", fields:FIELDS_TU_KEUANGAN})}`;
+
+  /* ---------- MONITORING (Kepala Sekolah & Pengawas) ---------- */
+  VIEWS.monitor_ringkasan = ()=>{
+    return `
+      <div class="stat-grid">
+        ${statCard(getKasusBK().length,"Kasus BK")}
+        ${statCard(getPelanggaran().length,"Pelanggaran Siswa")}
+        ${statCard(getPrestasi().length,"Prestasi Siswa")}
+        ${statCard(getJadwalUjian().length,"Agenda Ujian")}
+        ${statCard(getKegiatanHumas().length,"Kegiatan Humas")}
+        ${statCard(getPengajuanSarpras().length,"Pengajuan Sarpras")}
+        ${statCard(getSuratMasuk().length + getSuratKeluar().length,"Surat Tata Usaha")}
+      </div>
+      <div class="section">
+        ${sectionHead("Ringkasan lintas divisi","Dipantau oleh Kepala Sekolah & Pengawas Sekolah")}
+        <div class="table-wrap"><table><thead><tr>
+          <th>Divisi</th><th>Indikator</th><th>Catatan</th>
+        </tr></thead><tbody>
+          <tr><td><span class="role-chip" style="background:${ROLE_INFO.guru_bk.color}22;color:${ROLE_INFO.guru_bk.color}">Guru BK</span></td>
+              <td>${getKasusBK().filter(k=>k.status!=='Selesai').length} kasus masih berjalan</td>
+              <td>Lihat tab "Guru BK" untuk rincian kasus.</td></tr>
+          <tr><td><span class="role-chip" style="background:${ROLE_INFO.wakasek_kesiswaan.color}22;color:${ROLE_INFO.wakasek_kesiswaan.color}">Kesiswaan</span></td>
+              <td>${getPelanggaran().length} pelanggaran, ${getPrestasi().length} prestasi</td>
+              <td>Lihat tab "Kesiswaan" untuk rincian.</td></tr>
+          <tr><td><span class="role-chip" style="background:${ROLE_INFO.kurikulum.color}22;color:${ROLE_INFO.kurikulum.color}">Kurikulum</span></td>
+              <td>Rata-rata capaian ${DATA_KURIKULUM.ringkasan.rataCapaianKurikulum}</td>
+              <td>Lihat tab "Kurikulum" untuk rincian.</td></tr>
+          <tr><td><span class="role-chip" style="background:${ROLE_INFO.humas.color}22;color:${ROLE_INFO.humas.color}">Humas</span></td>
+              <td>${getKegiatanHumas().length} kegiatan, ${DATA_HUMAS.ringkasan.mitraAktif} mitra aktif</td>
+              <td>Lihat tab "Humas" untuk rincian.</td></tr>
+          <tr><td><span class="role-chip" style="background:${ROLE_INFO.sarpras.color}22;color:${ROLE_INFO.sarpras.color}">Sarpras</span></td>
+              <td>${DATA_SARPRAS.ringkasan.perluPerbaikan} aset perlu perbaikan</td>
+              <td>Lihat tab "Sarpras" untuk rincian.</td></tr>
+          <tr><td><span class="role-chip" style="background:${ROLE_INFO.tata_usaha.color}22;color:${ROLE_INFO.tata_usaha.color}">Tata Usaha</span></td>
+              <td>${getSuratMasuk().length} surat masuk, ${getKeuangan().filter(k=>k.status!=='Lunas').length} pembayaran belum lunas</td>
+              <td>Lihat tab "Tata Usaha" untuk rincian.</td></tr>
+        </tbody></table></div>
+      </div>`;
+  };
+  VIEWS.monitor_bk        = VIEWS.bk_kasus;
+  VIEWS.monitor_kesiswaan = ()=> `
+      ${sectionHead("Pelanggaran siswa")}
+      ${renderTable(getPelanggaran(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},{key:"kelas",label:"Kelas"},
+        {key:"jenis",label:"Jenis"},{key:"status",label:"Status",type:"status"}
+      ], {key:"kesiswaan_pelanggaran", title:"Pelanggaran Siswa", fields:FIELDS_KESISWAAN_PELANGGARAN})}
+      <div style="height:26px"></div>
+      ${sectionHead("Prestasi siswa")}
+      ${renderTable(getPrestasi(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},
+        {key:"bidang",label:"Bidang"},{key:"capaian",label:"Capaian",type:"status"}
+      ], {key:"kesiswaan_prestasi", title:"Prestasi Siswa", fields:FIELDS_KESISWAAN_PRESTASI})}`;
+  VIEWS.monitor_kurikulum = ()=> `
+      ${sectionHead("Agenda ujian")}
+      ${renderTable(getJadwalUjian(), [
+        {key:"nama",label:"Nama Ujian"},{key:"kelas",label:"Kelas"},{key:"tanggal",label:"Jadwal"},{key:"status",label:"Status",type:"status"}
+      ], {key:"kurikulum_jadwal", title:"Agenda Ujian", fields:FIELDS_KURIKULUM_UJIAN})}
+      <div style="height:26px"></div>
+      ${sectionHead("Capaian kurikulum")}
+      ${renderTable(DATA_KURIKULUM.capaianKurikulum, [
+        {key:"mapel",label:"Mapel"},{key:"kelas",label:"Kelas"},{key:"persentase",label:"Capaian",type:"status"}
+      ])}`;
+  VIEWS.monitor_humas = ()=> `
+      ${sectionHead("Kegiatan")}
+      ${renderTable(getKegiatanHumas(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"nama",label:"Kegiatan"},{key:"status",label:"Status",type:"status"}
+      ], {key:"humas_kegiatan", title:"Kegiatan Humas", fields:FIELDS_HUMAS_KEGIATAN})}
+      <div style="height:26px"></div>
+      ${sectionHead("Kerjasama mitra")}
+      ${renderTable(DATA_HUMAS.kerjasama, [
+        {key:"mitra",label:"Mitra"},{key:"bidang",label:"Bidang"},{key:"status",label:"Status",type:"status"}
+      ])}`;
+  VIEWS.monitor_sarpras = ()=> `
+      ${sectionHead("Pengajuan perbaikan")}
+      ${renderTable(getPengajuanSarpras(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"item",label:"Item"},
+        {key:"prioritas",label:"Prioritas",type:"status"},{key:"status",label:"Status",type:"status"}
+      ], {key:"sarpras_pengajuan", title:"Pengajuan Perbaikan Sarpras", fields:FIELDS_SARPRAS_PENGAJUAN})}
+      <div style="height:26px"></div>
+      ${sectionHead("Kondisi ruang & fasilitas")}
+      ${renderTable(DATA_SARPRAS.kondisiRuang, [
+        {key:"ruang",label:"Ruang"},{key:"kondisi",label:"Kondisi",type:"status"},{key:"catatan",label:"Catatan"}
+      ])}`;
+  VIEWS.monitor_tu = ()=> `
+      ${sectionHead("Surat masuk")}
+      ${renderTable(getSuratMasuk(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"nomorSurat",label:"No. Surat"},
+        {key:"asal",label:"Asal"},{key:"status",label:"Status",type:"status"}
+      ], {key:"tu_surat_masuk", title:"Surat Masuk", fields:FIELDS_TU_SURAT_MASUK})}
+      <div style="height:26px"></div>
+      ${sectionHead("Surat keluar")}
+      ${renderTable(getSuratKeluar(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"nomorSurat",label:"No. Surat"},
+        {key:"tujuan",label:"Tujuan"},{key:"status",label:"Status",type:"status"}
+      ], {key:"tu_surat_keluar", title:"Surat Keluar", fields:FIELDS_TU_SURAT_KELUAR})}
+      <div style="height:26px"></div>
+      ${sectionHead("Administrasi siswa")}
+      ${renderTable(getAdministrasiSiswa(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},
+        {key:"jenis",label:"Jenis",type:"status"},{key:"keterangan",label:"Keterangan"}
+      ], {key:"tu_administrasi_siswa", title:"Administrasi Siswa", fields:FIELDS_TU_ADMINISTRASI})}
+      <div style="height:26px"></div>
+      ${sectionHead("Keuangan / pembayaran siswa")}
+      ${renderTable(getKeuangan(), [
+        {key:"tanggal",label:"Tanggal",type:"date"},{key:"siswa",label:"Siswa"},
+        {key:"keterangan",label:"Keterangan"},{key:"nominal",label:"Nominal"},{key:"status",label:"Status",type:"status"}
+      ], {key:"tu_keuangan", title:"Keuangan / Pembayaran Siswa", fields:FIELDS_TU_KEUANGAN})}`;
+  VIEWS.monitor_catatan = ()=>{
+    const notes = getCatatanPemantauan();
+    const notesHtml = notes.length===0
+      ? `<div class="empty-state">Belum ada catatan pemantauan.</div>`
+      : notes.map(n=>`
+          <div class="note-item">
+            <div class="note-meta"><strong>${escapeHtml(n.oleh)}</strong> — ${escapeHtml(n.jabatan)} · ${fmtDate(n.tanggal)}</div>
+            <div>${escapeHtml(n.isi)}</div>
+          </div>`).join("");
+    return `
+      ${addForm("catatan-pemantauan","Tambah catatan pemantauan",[
+        {name:"isi",label:"Catatan / arahan pembinaan",type:"textarea",full:true}
+      ])}
+      ${notesHtml}`;
+  };
+
+  /* =========================================================
+     KONFIGURASI MENU per-role
+     ========================================================= */
+  const ROUTE_CONFIG = {
+    guru_bk: [
+      {id:"bk_ringkasan", label:"Ringkasan", title:"Ringkasan Guru BK"},
+      {id:"bk_kasus", label:"Kasus BK", title:"Data Kasus Bimbingan Konseling"},
+      {id:"bk_jadwal", label:"Jadwal Konseling", title:"Jadwal Konseling"}
+    ],
+    wakasek_kesiswaan: [
+      {id:"kesiswaan_ringkasan", label:"Ringkasan", title:"Ringkasan Kesiswaan"},
+      {id:"kesiswaan_pelanggaran", label:"Pelanggaran", title:"Pelanggaran Siswa"},
+      {id:"kesiswaan_prestasi", label:"Prestasi", title:"Prestasi Siswa"},
+      {id:"kesiswaan_ekskul", label:"Ekstrakurikuler", title:"Ekstrakurikuler"},
+      {id:"kesiswaan_laporan_bk", label:"Laporan BK", title:"Laporan Kegiatan Guru BK"}
+    ],
+    kurikulum: [
+      {id:"kurikulum_ringkasan", label:"Ringkasan", title:"Ringkasan Kurikulum"},
+      {id:"kurikulum_ujian", label:"Jadwal Ujian", title:"Jadwal Ujian & Penilaian"},
+      {id:"kurikulum_capaian", label:"Capaian Kurikulum", title:"Capaian Kurikulum"},
+      {id:"kurikulum_mapel", label:"Mata Pelajaran", title:"Daftar Mata Pelajaran"}
+    ],
+    humas: [
+      {id:"humas_ringkasan", label:"Ringkasan", title:"Ringkasan Humas"},
+      {id:"humas_kegiatan", label:"Kegiatan", title:"Kegiatan & Agenda Humas"},
+      {id:"humas_kerjasama", label:"Kerjasama", title:"Kerjasama Mitra"},
+      {id:"humas_publikasi", label:"Publikasi", title:"Publikasi"}
+    ],
+    sarpras: [
+      {id:"sarpras_ringkasan", label:"Ringkasan", title:"Ringkasan Sarana Prasarana"},
+      {id:"sarpras_inventaris", label:"Inventaris", title:"Inventaris Aset"},
+      {id:"sarpras_pengajuan", label:"Pengajuan Perbaikan", title:"Pengajuan Perbaikan"},
+      {id:"sarpras_kondisi", label:"Kondisi Ruang", title:"Kondisi Ruang & Fasilitas"}
+    ],
+    tata_usaha: [
+      {id:"tu_ringkasan", label:"Ringkasan", title:"Ringkasan Tata Usaha"},
+      {id:"tu_surat_masuk", label:"Surat Masuk", title:"Surat Masuk"},
+      {id:"tu_surat_keluar", label:"Surat Keluar", title:"Surat Keluar"},
+      {id:"tu_administrasi", label:"Administrasi Siswa", title:"Administrasi Siswa"},
+      {id:"tu_keuangan", label:"Keuangan", title:"Keuangan / Pembayaran Siswa"}
+    ],
+    kepala_sekolah: [
+      {id:"monitor_ringkasan", label:"Ringkasan Umum", title:"Ringkasan Umum Sekolah"},
+      {id:"monitor_bk", label:"Guru BK", title:"Pemantauan — Guru BK"},
+      {id:"monitor_kesiswaan", label:"Kesiswaan", title:"Pemantauan — Kesiswaan"},
+      {id:"monitor_kurikulum", label:"Kurikulum", title:"Pemantauan — Kurikulum"},
+      {id:"monitor_humas", label:"Humas", title:"Pemantauan — Humas"},
+      {id:"monitor_sarpras", label:"Sarpras", title:"Pemantauan — Sarpras"},
+      {id:"monitor_tu", label:"Tata Usaha", title:"Pemantauan — Tata Usaha"},
+      {id:"monitor_catatan", label:"Catatan Pemantauan", title:"Catatan Pemantauan"}
+    ]
+  };
+  ROUTE_CONFIG.pengawas = ROUTE_CONFIG.kepala_sekolah;
+
+  /* =========================================================
+     ORGANISASI SISWA (OSIS, Pramuka, PMR, Paskibra, dst.)
+     Dibangun secara generik dari ORGANISASI_LIST (lihat
+     data/laporan-organisasi.js) supaya menambah organisasi baru
+     tidak perlu mengubah kode di bawah ini.
+     ========================================================= */
+  const ORG_GETTERS = {};
+
+  function registerOrgDashboard(cfg){
+    const id = cfg.id;
+    const DATA = cfg.dataVar;
+
+    // Anggota: data lama ditampilkan dulu, anggota BARU ditambahkan di
+    // urutan paling bawah (lihat withExtraAppend).
+    const getAnggota      = ()=> withExtraAppend(id+"_anggota", DATA.anggota);
+    const getProkja       = ()=> withExtra(id+"_prokja", DATA.programKerja);
+    const getKegiatanOrg  = ()=> withExtra(id+"_kegiatan", DATA.kegiatan);
+    const getKeuanganOrg  = ()=> withExtra(id+"_keuangan", DATA.keuangan);
+    const getLpjOrg       = ()=> withExtra(id+"_lpj", DATA.lpj);
+
+    ORG_GETTERS[id] = { getAnggota, getProkja, getKegiatan:getKegiatanOrg, getKeuangan:getKeuanganOrg, getLpj:getLpjOrg };
+
+    FORM_HANDLERS[id+"-anggota"] = (data)=>{
+      const siswa = findSiswaByNisn(data.siswaNisn);
+      addExtra(id+"_anggota", {
+        nisn: data.siswaNisn,
+        nama: siswa ? siswa.nama : "(siswa tidak ditemukan)",
+        kelas: siswa ? siswa.kelas : "-",
+        jabatan: data.jabatan
+      }, {append:true}); // anggota baru diletakkan paling bawah
+    };
+    FORM_HANDLERS[id+"-prokja"] = (data)=>{
+      addExtra(id+"_prokja", { nama:data.nama, bidang:data.bidang, target:data.target, capaian:data.capaian, status:data.status });
+    };
+    FORM_HANDLERS[id+"-kegiatan"] = (data)=>{
+      addExtra(id+"_kegiatan", {
+        tanggalMulai:data.tanggalMulai,
+        tanggalSelesai:data.status==="Selesai" ? (data.tanggalSelesai||"") : "",
+        nama:data.nama, deskripsi:data.deskripsi, status:data.status
+      });
+    };
+    FORM_HANDLERS[id+"-keuangan"] = (data)=>{
+      addExtra(id+"_keuangan", { tanggal:data.tanggal, keterangan:data.keterangan, jenis:data.jenis, nominal:Number(data.nominal)||0 });
+    };
+    FORM_HANDLERS[id+"-lpj"] = (data, user)=>{
+      addExtra(id+"_lpj", {
+        tanggal:new Date().toISOString().slice(0,10),
+        periode:data.periode,
+        disusunOleh: user.name + " (" + user.jabatan + ")",
+        isi:data.isi,
+        lampiran: data.lampiran || null
+      });
+    };
+
+    VIEWS[id+"_ringkasan"] = ()=>{
+      const anggota = getAnggota(), prokja = getProkja(), kegiatan = getKegiatanOrg(), keu = getKeuanganOrg();
+      const pemasukan = keu.filter(k=>k.jenis==="Pemasukan").reduce((a,b)=>a+Number(b.nominal||0),0);
+      const pengeluaran = keu.filter(k=>k.jenis==="Pengeluaran").reduce((a,b)=>a+Number(b.nominal||0),0);
+      return `
+        <div class="stat-grid">
+          ${statCard(anggota.length,"Anggota Tercatat")}
+          ${statCard(prokja.filter(p=>p.status==="Berjalan").length,"Program Berjalan")}
+          ${statCard(kegiatan.length,"Kegiatan Tercatat")}
+          ${statCard(rupiah(pemasukan-pengeluaran),"Saldo Kas")}
+        </div>
+        <div class="section">
+          ${sectionHead("Program kerja", "Pembina: " + DATA.pembina)}
+          ${renderTable(prokja.slice(0,5), [
+            {key:"nama",label:"Program"},{key:"bidang",label:"Bidang"},{key:"capaian",label:"Capaian"},{key:"status",label:"Status",type:"status"}
+          ])}
+        </div>
+        <div class="section">
+          ${sectionHead("Kegiatan terbaru")}
+          ${renderTable(kegiatan.slice(0,5), [
+            {key:"tanggalMulai",label:"Tanggal Mulai",type:"date"},{key:"nama",label:"Kegiatan"},{key:"status",label:"Status",type:"status"}
+          ])}
+        </div>`;
+    };
+
+    VIEWS[id+"_anggota"] = ()=>`
+        ${addForm(id+"-anggota","Tambah anggota / pengurus", FIELDS_ORG_ANGGOTA)}
+        ${renderTable(getAnggota(), [
+          {key:"nisn",label:"NISN"},{key:"nama",label:"Nama"},{key:"kelas",label:"Kelas"},{key:"jabatan",label:"Jabatan"}
+        ], {key:id+"_anggota", title:"Anggota "+cfg.label, fields:FIELDS_ORG_ANGGOTA})}`;
+
+    VIEWS[id+"_prokja"] = ()=>`
+        ${addForm(id+"-prokja","Tambah program kerja", FIELDS_ORG_PROKJA)}
+        ${renderTable(getProkja(), [
+          {key:"nama",label:"Program"},{key:"bidang",label:"Bidang"},{key:"target",label:"Target"},
+          {key:"capaian",label:"Capaian"},{key:"status",label:"Status",type:"status"}
+        ], {key:id+"_prokja", title:"Program Kerja "+cfg.label, fields:FIELDS_ORG_PROKJA})}`;
+
+    VIEWS[id+"_kegiatan"] = ()=>`
+        ${addForm(id+"-kegiatan","Tambah kegiatan", FIELDS_ORG_KEGIATAN)}
+        ${renderTable(getKegiatanOrg(), [
+          {key:"tanggalMulai",label:"Tanggal Mulai",type:"date"},
+          {key:"tanggalSelesai",label:"Tanggal Selesai",type:"date"},
+          {key:"nama",label:"Kegiatan"},
+          {key:"deskripsi",label:"Deskripsi"},{key:"status",label:"Status",type:"status"}
+        ], {key:id+"_kegiatan", title:"Kegiatan "+cfg.label, fields:FIELDS_ORG_KEGIATAN})}`;
+
+    VIEWS[id+"_keuangan"] = ()=>{
+      const keu = getKeuanganOrg();
+      const pemasukan = keu.filter(k=>k.jenis==="Pemasukan").reduce((a,b)=>a+Number(b.nominal||0),0);
+      const pengeluaran = keu.filter(k=>k.jenis==="Pengeluaran").reduce((a,b)=>a+Number(b.nominal||0),0);
+      return `
+        <div class="stat-grid">
+          ${statCard(rupiah(pemasukan),"Total Pemasukan")}
+          ${statCard(rupiah(pengeluaran),"Total Pengeluaran")}
+          ${statCard(rupiah(pemasukan-pengeluaran),"Saldo Kas Saat Ini")}
+        </div>
+        ${addForm(id+"-keuangan","Catat transaksi kas", FIELDS_ORG_KEUANGAN)}
+        ${renderTable(keu, [
+          {key:"tanggal",label:"Tanggal",type:"date"},{key:"keterangan",label:"Keterangan"},
+          {key:"jenis",label:"Jenis",type:"status"},{key:"nominal",label:"Nominal",type:"currency"}
+        ], {key:id+"_keuangan", title:"Keuangan "+cfg.label, fields:FIELDS_ORG_KEUANGAN})}`;
+    };
+
+    VIEWS[id+"_lpj"] = ()=>{
+      const lpj = getLpjOrg();
+      const list = lpj.length===0
+        ? `<div class="empty-state">Belum ada laporan pertanggungjawaban.</div>`
+        : lpj.map(n=>`
+            <div class="note-item">
+              <div class="note-meta"><strong>${escapeHtml(n.disusunOleh)}</strong> — ${escapeHtml(n.periode)} · ${fmtDate(n.tanggal)}</div>
+              <div>${escapeHtml(n.isi)}</div>
+              ${renderAttachmentBlock(id+"_lpj", n)}
+            </div>`).join("");
+      return `
+        ${addForm(id+"-lpj","Tambah laporan pertanggungjawaban (LPJ)",[
+          {name:"periode",label:"Periode laporan (contoh: Minggu ke-3 Agustus 2026)",full:true},
+          {name:"isi",label:"Isi laporan",type:"textarea",full:true},
+          {name:"lampiran",label:"Lampiran (PDF/Word)",type:"file",full:true}
+        ])}
+        ${list}`;
+    };
+
+    ROUTE_CONFIG[id] = [
+      {id:id+"_ringkasan", label:"Ringkasan", title:"Ringkasan " + cfg.label},
+      {id:id+"_anggota", label:"Anggota", title:"Anggota " + cfg.label},
+      {id:id+"_prokja", label:"Program Kerja", title:"Program Kerja " + cfg.label},
+      {id:id+"_kegiatan", label:"Kegiatan", title:"Kegiatan " + cfg.label},
+      {id:id+"_keuangan", label:"Keuangan / Kas", title:"Keuangan / Kas " + cfg.label},
+      {id:id+"_lpj", label:"Laporan (LPJ)", title:"Laporan Pertanggungjawaban " + cfg.label}
+    ];
+  }
+
+  const FIELDS_ORG_ANGGOTA = [
+    {name:"siswaNisn",label:"Nama Siswa",type:"student-select"},
+    {name:"jabatan",label:"Jabatan",full:true}
+  ];
+  const FIELDS_ORG_PROKJA = [
+    {name:"nama",label:"Nama program",full:true},
+    {name:"bidang",label:"Bidang"},
+    {name:"target",label:"Target"},
+    {name:"capaian",label:"Capaian saat ini"},
+    {name:"status",label:"Status",type:"select",options:["Belum Mulai","Berjalan","Selesai"]}
+  ];
+  const FIELDS_ORG_KEGIATAN = [
+    {name:"tanggalMulai",label:"Tanggal Mulai",type:"date"},
+    {name:"tanggalSelesai",label:"Tanggal Selesai",type:"end-date"},
+    {name:"nama",label:"Nama kegiatan",full:true},
+    {name:"deskripsi",label:"Deskripsi",type:"textarea",full:true},
+    {name:"status",label:"Status",type:"select",options:["Direncanakan","Berjalan","Selesai"]}
+  ];
+  const FIELDS_ORG_KEUANGAN = [
+    {name:"tanggal",label:"Tanggal",type:"date"},
+    {name:"keterangan",label:"Keterangan",full:true},
+    {name:"jenis",label:"Jenis",type:"select",options:["Pemasukan","Pengeluaran"]},
+    {name:"nominal",label:"Nominal (angka saja, contoh: 150000)",type:"number"}
+  ];
+
+  ORGANISASI_LIST.forEach(registerOrgDashboard);
+
+  /* ---------- Laporan Organisasi (dilihat Wakasek Kesiswaan, Kepala Sekolah, Pengawas) ---------- */
+  // Kotak seleksi supaya pengguna bisa memilih organisasi tertentu yang ingin
+  // diamati/ditampilkan, atau tetap melihat semua organisasi sekaligus.
+  function orgLaporanSelectBox(){
+    const opts = [`<option value="semua" ${orgLaporanFilter==="semua"?"selected":""}>Semua Organisasi</option>`]
+      .concat(ORGANISASI_LIST.map(org=>
+        `<option value="${escapeHtml(org.id)}" ${orgLaporanFilter===org.id?"selected":""}>${escapeHtml(org.label)}</option>`
+      )).join("");
+    return `<div class="field" style="max-width:320px;">
+        <label>Pilih organisasi yang ingin diamati</label>
+        <select data-role="org-laporan-select">${opts}</select>
+      </div>`;
+  }
+
+  function renderOrgLaporanContent(){
+    const orgsToShow = orgLaporanFilter === "semua"
+      ? ORGANISASI_LIST
+      : ORGANISASI_LIST.filter(org => org.id === orgLaporanFilter);
+    if(orgsToShow.length===0){
+      return `<div class="empty-state">Organisasi tidak ditemukan.</div>`;
+    }
+    return orgsToShow.map(org=>{
+      const g = ORG_GETTERS[org.id];
+      const anggota = g.getAnggota(), prokja = g.getProkja(), keu = g.getKeuangan(), lpj = g.getLpj();
+      const pemasukan = keu.filter(k=>k.jenis==="Pemasukan").reduce((a,b)=>a+Number(b.nominal||0),0);
+      const pengeluaran = keu.filter(k=>k.jenis==="Pengeluaran").reduce((a,b)=>a+Number(b.nominal||0),0);
+      const lpjHtml = lpj.length===0
+        ? `<div class="empty-state">Belum ada laporan pertanggungjawaban dari ${escapeHtml(org.label)}.</div>`
+        : lpj.map(n=>`
+            <div class="note-item">
+              <div class="note-meta"><strong>${escapeHtml(n.disusunOleh)}</strong> — ${escapeHtml(n.periode)} · ${fmtDate(n.tanggal)}</div>
+              <div>${escapeHtml(n.isi)}</div>
+              ${renderAttachmentBlock(org.id+"_lpj", n)}
+            </div>`).join("");
+      return `
+        <div class="section">
+          <div class="section-head">
+            <h3><span class="role-chip" style="background:${org.color}22;color:${org.color}">${escapeHtml(org.label)}</span></h3>
+            <span class="hint">Pembina: ${escapeHtml(org.dataVar.pembina)}</span>
+          </div>
+          <div class="stat-grid">
+            ${statCard(anggota.length,"Anggota")}
+            ${statCard(prokja.filter(p=>p.status==="Berjalan").length,"Program Berjalan")}
+            ${statCard(rupiah(pemasukan-pengeluaran),"Saldo Kas")}
+          </div>
+          ${lpjHtml}
+        </div>`;
+    }).join("");
+  }
+
+  VIEWS.kesiswaan_laporan_organisasi = ()=>{
+    return `
+      ${orgLaporanSelectBox()}
+      <div data-role="org-laporan-container" style="margin-top:20px;">${renderOrgLaporanContent()}</div>`;
+  };
+  VIEWS.monitor_organisasi = VIEWS.kesiswaan_laporan_organisasi;
+
+  ROUTE_CONFIG.wakasek_kesiswaan.push(
+    {id:"kesiswaan_laporan_organisasi", label:"Laporan Organisasi", title:"Laporan Organisasi Siswa"}
+  );
+  // Sisipkan sebelum tab "Catatan Pemantauan" (item terakhir) supaya urutan tetap rapi.
+  ROUTE_CONFIG.kepala_sekolah.splice(
+    ROUTE_CONFIG.kepala_sekolah.length - 1, 0,
+    {id:"monitor_organisasi", label:"Organisasi Siswa", title:"Pemantauan — Organisasi Siswa"}
+  );
+
+  /* =========================================================
+     STATE & RENDER UTAMA
+     ========================================================= */
+  let currentUser = null;
+  let currentView = null;
+  let bkKasusFilter = "";       // teks pencarian (NISN/Nama/Kelas) untuk tabel Kasus BK
+  let orgLaporanFilter = "semua"; // id organisasi yang dipilih pada Laporan Organisasi ("semua" = tampilkan semua)
+
+  function findUser(username, password){
+    return USERS.find(u => u.username===username && u.password===password) || null;
+  }
+  function findUserByUsername(username){
+    return USERS.find(u => u.username===username) || null;
+  }
+
+  function showLogin(message){
+    $("#dashboard-screen").hidden = true;
+    $("#login-screen").hidden = false;
+    const errBox = $("#login-error");
+    if(message){ errBox.textContent = message; errBox.hidden = false; }
+    else { errBox.hidden = true; }
+  }
+
+  function showDashboard(user){
+    currentUser = user;
+    const info = ROLE_INFO[user.role];
+    $("#login-screen").hidden = true;
+    $("#dashboard-screen").hidden = false;
+
+    $("#who-name").textContent = user.name;
+    $("#who-jabatan").textContent = user.jabatan;
+    const sealWho = $("#who-seal");
+    sealWho.textContent = info.short;
+    sealWho.style.color = info.color;
+
+    $("#side-role-box").innerHTML = `<strong>${escapeHtml(user.jabatan)}</strong>${escapeHtml(user.name)}`;
+
+    const routes = ROUTE_CONFIG[user.role] || [];
+    $("#side-nav").innerHTML = routes.map(r=>
+      `<button class="nav-item" data-route="${r.id}">${escapeHtml(r.label)}</button>`
+    ).join("");
+
+    renderRoute(routes[0] ? routes[0].id : null);
+  }
+
+  function renderRoute(routeId){
+    if(!currentUser || !routeId) return;
+    currentView = routeId;
+    const routes = ROUTE_CONFIG[currentUser.role] || [];
+    const routeMeta = routes.find(r=>r.id===routeId);
+    $$(".nav-item", $("#side-nav")).forEach(btn=>{
+      btn.classList.toggle("active", btn.dataset.route===routeId);
+    });
+    $("#page-title").textContent = routeMeta ? routeMeta.title : "";
+    const builder = VIEWS[routeId];
+    $("#content").innerHTML = builder ? builder() : `<div class="empty-state">Tampilan belum tersedia.</div>`;
+  }
+
+  /* ---------------- Cek file data ---------------- */
+  // Jika salah satu file di folder data/ gagal dimuat (mis. folder "data"
+  // tidak ikut ter-upload, path salah, atau nama file berubah), variabel di
+  // bawah ini tidak akan ada. Kita cek di awal supaya kegagalan login tidak
+  // terjadi secara diam-diam tanpa pesan apa pun ke pengguna.
+  function checkDataLoaded(){
+    const required = {
+      "USERS (data/users.js)": typeof USERS !== "undefined",
+      "ROLE_INFO (data/users.js)": typeof ROLE_INFO !== "undefined",
+      "SISWA_RAW (data/siswa.js)": typeof SISWA_RAW !== "undefined",
+      "DATA_GURU_BK (data/guru-bk.js)": typeof DATA_GURU_BK !== "undefined",
+      "DATA_KESISWAAN (data/wakasek-kesiswaan.js)": typeof DATA_KESISWAAN !== "undefined",
+      "DATA_KURIKULUM (data/kurikulum.js)": typeof DATA_KURIKULUM !== "undefined",
+      "DATA_HUMAS (data/humas.js)": typeof DATA_HUMAS !== "undefined",
+      "DATA_SARPRAS (data/sarpras.js)": typeof DATA_SARPRAS !== "undefined",
+      "DATA_TATA_USAHA (data/tata-usaha.js)": typeof DATA_TATA_USAHA !== "undefined",
+      "DATA_OSIS (data/osis.js)": typeof DATA_OSIS !== "undefined",
+      "DATA_PRAMUKA (data/pramuka.js)": typeof DATA_PRAMUKA !== "undefined",
+      "DATA_PMR (data/pmr.js)": typeof DATA_PMR !== "undefined",
+      "DATA_PASKIBRA (data/paskibra.js)": typeof DATA_PASKIBRA !== "undefined",
+      "ORGANISASI_LIST (data/laporan-organisasi.js)": typeof ORGANISASI_LIST !== "undefined"
+    };
+    const missing = Object.keys(required).filter(k => !required[k]);
+    return missing;
+  }
+
+  /* ---------------- Event bindings ---------------- */
+  $("#login-form").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const missing = checkDataLoaded();
+    if(missing.length > 0){
+      showLogin(
+        "Gagal memuat data aplikasi: " + missing.join(", ") + ". " +
+        "Pastikan folder \"data\" berada di lokasi yang sama dengan index.html " +
+        "(sebagai folder bertetangga, bukan di dalam folder lain), lalu muat ulang halaman. " +
+        "Jika ini terjadi saat membuka file secara langsung (bukan lewat GitHub Pages/server), " +
+        "coba jalankan lewat server lokal karena sebagian browser memblokir pemuatan file lokal."
+      );
+      return;
+    }
+
+    try{
+      const username = $("#login-username").value.trim();
+      const password = $("#login-password").value;
+      if(!username || !password){
+        showLogin("Mohon isi nama pengguna dan kata sandi.");
+        return;
+      }
+      const user = findUser(username, password);
+      if(!user){
+        showLogin("Username atau kata sandi salah. Silakan coba lagi.");
+        return;
+      }
+      sessionStorage.setItem("sim_sekolah_user", user.username);
+      $("#login-username").value = "";
+      $("#login-password").value = "";
+      showDashboard(user);
+    }catch(err){
+      console.error("Login error:", err);
+      showLogin("Terjadi kesalahan teknis saat memproses login: " + err.message);
+    }
+  });
+
+  $("#side-nav").addEventListener("click", function(e){
+    const btn = e.target.closest(".nav-item");
+    if(!btn) return;
+    renderRoute(btn.dataset.route);
+  });
+
+  $("#logout-btn").addEventListener("click", function(){
+    sessionStorage.removeItem("sim_sekolah_user");
+    currentUser = null;
+    showLogin();
+  });
+
+  // Toggle field "Tanggal Selesai" berdasarkan nilai field "Status" pada
+  // form yang sama (dipakai baik di form "Tambah data" maupun form Edit).
+  function handleConditionalDateChange(e){
+    const select = e.target.closest('select[name="status"]');
+    if(!select) return;
+    const form = select.closest("form");
+    if(!form) return;
+    const dateInput = form.querySelector('input[data-role="conditional-date"]');
+    if(!dateInput) return;
+    const hint = form.querySelector('[data-conditional-hint]');
+    if(select.value === "Selesai"){
+      dateInput.disabled = false;
+      if(hint) hint.textContent = "";
+    } else {
+      dateInput.disabled = true;
+      dateInput.value = "";
+      if(hint) hint.textContent = 'Isi tanggal selesai setelah status diubah menjadi "Selesai".';
+    }
+  }
+  $("#content").addEventListener("change", handleConditionalDateChange);
+  $("#modal-box").addEventListener("change", handleConditionalDateChange);
+
+  // Kotak seleksi Kasus BK (NISN/Nama/Kelas): filter tabel tanpa me-render
+  // ulang seluruh tampilan, supaya fokus pada kotak teks tidak hilang.
+  $("#content").addEventListener("input", function(e){
+    const inp = e.target.closest('input[data-role="bk-kasus-filter-input"]');
+    if(!inp) return;
+    bkKasusFilter = inp.value;
+    const container = $('[data-role="bk-kasus-table-container"]');
+    if(container){
+      const withActions = container.dataset.withActions === "true";
+      container.innerHTML = renderKasusBKTable(withActions);
+    }
+  });
+
+  // Dropdown seleksi organisasi pada Laporan Organisasi: tampilkan hanya
+  // organisasi yang dipilih (atau semua organisasi).
+  $("#content").addEventListener("change", function(e){
+    const sel = e.target.closest('select[data-role="org-laporan-select"]');
+    if(!sel) return;
+    orgLaporanFilter = sel.value;
+    const container = $('[data-role="org-laporan-container"]');
+    if(container) container.innerHTML = renderOrgLaporanContent();
+  });
+
+  // Delegasi submit untuk semua form "tambah data" di dalam konten dashboard
+  $("#content").addEventListener("submit", function(e){
+    const form = e.target.closest("form[data-form-id]");
+    if(!form) return;
+    e.preventDefault();
+    const formId = form.dataset.formId;
+    const handler = FORM_HANDLERS[formId];
+    if(!handler) return;
+
+    // Validasi ringan: kalau form punya kolom pilih siswa, pastikan sudah memilih dari daftar saran
+    const studentValues = Array.from(form.querySelectorAll('input[data-role="student-value"]'));
+    const emptyValue = studentValues.find(inp => !inp.value);
+    if(emptyValue){
+      const hint = form.querySelector(`.student-hint[data-hint-for="${emptyValue.name}"]`);
+      if(hint){ hint.textContent = "Mohon ketik nama/NISN lalu klik salah satu saran siswa yang muncul."; hint.classList.remove("filled"); }
+      const searchInput = form.querySelector(`input[data-role="student-search"][data-target="${emptyValue.name}"]`);
+      if(searchInput) searchInput.focus();
+      return;
+    }
+
+    // Kumpulkan nilai field teks biasa (kolom file ditangani terpisah di bawah)
+    const data = {};
+    Array.from(form.elements).forEach(el=>{
+      if(el.name && el.type !== "file") data[el.name] = el.value;
+    });
+
+    function finishSubmit(){
+      handler(data, currentUser);
+      form.reset();
+      // Setelah reset, pastikan field tanggal bersyarat kembali ke kondisi
+      // nonaktif (form.reset() tidak selalu memicu event "change").
+      const conditionalInput = form.querySelector('input[data-role="conditional-date"]');
+      if(conditionalInput){
+        conditionalInput.disabled = true;
+        conditionalInput.value = "";
+        const hint = form.querySelector('[data-conditional-hint]');
+        if(hint) hint.textContent = 'Isi tanggal selesai setelah status diubah menjadi "Selesai".';
+      }
+      const details = form.closest("details");
+      if(details) details.open = false;
+      renderRoute(currentView); // refresh tampilan agar data baru langsung terlihat
+    }
+
+    // Tangani lampiran file (mis. LPJ): baca sebagai base64 sebelum menyimpan.
+    const fileInputs = Array.from(form.querySelectorAll('input[type="file"]')).filter(inp => inp.files && inp.files[0]);
+    if(fileInputs.length === 0){
+      finishSubmit();
+      return;
+    }
+
+    const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB — batas aman untuk localStorage
+    let cancelled = false;
+    let pending = fileInputs.length;
+    fileInputs.forEach(inp=>{
+      const file = inp.files[0];
+      if(!/\.(pdf|docx?|DOCX?|PDF)$/i.test(file.name)){
+        cancelled = true;
+        alert('File "' + file.name + '" bukan format PDF atau Word (.doc/.docx). Silakan pilih file lain.');
+        return;
+      }
+      if(file.size > MAX_FILE_SIZE){
+        cancelled = true;
+        alert('File "' + file.name + '" berukuran lebih dari 4 MB. Silakan unggah file yang lebih kecil.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(){
+        if(cancelled) return;
+        data[inp.name] = { fileName: file.name, fileType: file.type, dataUrl: reader.result };
+        pending--;
+        if(pending === 0 && !cancelled) finishSubmit();
+      };
+      reader.onerror = function(){
+        cancelled = true;
+        alert('Gagal membaca file "' + file.name + '".');
+      };
+      reader.readAsDataURL(file);
+    });
+    if(cancelled) return;
+  });
+
+  // Klik tombol edit / hapus pada baris tabel (kolom "Aksi")
+  $("#content").addEventListener("click", function(e){
+    const btn = e.target.closest(".icon-btn[data-action]");
+    if(!btn) return;
+    const action = btn.dataset.action;
+    if(action === "edit" || action === "delete"){
+      const id = btn.dataset.id;
+      const entry = ROW_REGISTRY[id];
+      if(!entry) return;
+      if(action === "edit") openEditModal(entry);
+      else openDeleteModal(entry);
+      return;
+    }
+    if(action === "attachment-replace"){
+      const noteId = btn.dataset.noteId;
+      const input = $(`input[data-role="attachment-replace-input"][data-note-id="${CSS.escape(noteId)}"]`, btn.closest(".attachment-row, .attachment-empty"));
+      if(input) input.click();
+    }
+  });
+
+  // Saat file baru dipilih lewat ikon "Ganti file": baca sebagai base64,
+  // simpan sebagai override lampiran untuk catatan tersebut, lalu refresh.
+  $("#content").addEventListener("change", function(e){
+    const input = e.target.closest('input[data-role="attachment-replace-input"]');
+    if(!input || !input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const noteId = input.dataset.noteId;
+    const entry = ATTACHMENT_REGISTRY[noteId];
+    if(!entry) return;
+
+    if(!/\.(pdf|docx?|DOCX?|PDF)$/i.test(file.name)){
+      alert('File "' + file.name + '" bukan format PDF atau Word (.doc/.docx). Silakan pilih file lain.');
+      input.value = "";
+      return;
+    }
+    const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
+    if(file.size > MAX_FILE_SIZE){
+      alert('File "' + file.name + '" berukuran lebih dari 4 MB. Silakan unggah file yang lebih kecil.');
+      input.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(){
+      saveEditOverride(entry.storageKey, noteId, {
+        lampiran: { fileName: file.name, fileType: file.type, dataUrl: reader.result }
+      });
+      renderRoute(currentView);
+    };
+    reader.onerror = function(){
+      alert('Gagal membaca file "' + file.name + '".');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Modal: tutup lewat tombol "Batal", klik area gelap di luar kotak modal,
+  // atau tombol Esc di keyboard.
+  $("#modal-overlay").addEventListener("click", function(e){
+    if(e.target === this) closeModal();
+  });
+  $("#modal-box").addEventListener("click", function(e){
+    if(e.target.closest("[data-modal-close]")) closeModal();
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && !$("#modal-overlay").hidden) closeModal();
+  });
+
+  // Saat mengetik di kolom pencarian siswa: filter SISWA_LIST dan tampilkan
+  // daftar saran di bawah kolom (nama atau NISN yang mengandung teks yang diketik).
+  $("#content").addEventListener("input", function(e){
+    const inp = e.target.closest('input[data-role="student-search"]');
+    if(!inp) return;
+    const targetName = inp.dataset.target;
+    const box = document.querySelector(`.student-suggestions[data-suggestions-for="${targetName}"]`);
+    const hiddenInput = document.querySelector(`input[data-role="student-value"][name="${targetName}"]`);
+    const hint = document.querySelector(`.student-hint[data-hint-for="${targetName}"]`);
+
+    // Selama masih mengetik ulang, anggap pilihan sebelumnya batal sampai
+    // salah satu saran benar-benar diklik lagi.
+    if(hiddenInput) hiddenInput.value = "";
+    if(hint){ hint.textContent = ""; hint.classList.remove("filled"); }
+    if(!box) return;
+
+    const q = inp.value.trim().toLowerCase();
+    if(q.length === 0){ box.innerHTML = ""; box.hidden = true; return; }
+
+    const matches = SISWA_LIST.filter(s =>
+      s.nama.toLowerCase().includes(q) || s.nisn.includes(q)
+    ).slice(0, 8);
+
+    box.innerHTML = matches.length === 0
+      ? `<div class="student-suggestion-empty">Tidak ditemukan siswa yang cocok.</div>`
+      : matches.map(s => `
+          <div class="student-suggestion-item" data-nisn="${escapeHtml(s.nisn)}" data-target="${escapeHtml(targetName)}">
+            <span class="ssi-nama">${escapeHtml(s.nama)}</span>
+            <span class="ssi-meta">${escapeHtml(s.kelas)} · ${escapeHtml(s.nisn)}</span>
+          </div>`).join("");
+    box.hidden = false;
+  });
+
+  // Klik salah satu saran: gunakan "mousedown" (bukan "click") supaya
+  // terpicu SEBELUM kolom teks kehilangan fokus (blur), sehingga saran
+  // tidak keburu hilang duluan sebelum sempat diklik.
+  $("#content").addEventListener("mousedown", function(e){
+    const item = e.target.closest(".student-suggestion-item");
+    if(!item) return;
+    e.preventDefault();
+    const targetName = item.dataset.target;
+    const nisn = item.dataset.nisn;
+    const siswa = findSiswaByNisn(nisn);
+    const hiddenInput = document.querySelector(`input[data-role="student-value"][name="${targetName}"]`);
+    const searchInput = document.querySelector(`input[data-role="student-search"][data-target="${targetName}"]`);
+    const box = document.querySelector(`.student-suggestions[data-suggestions-for="${targetName}"]`);
+    const hint = document.querySelector(`.student-hint[data-hint-for="${targetName}"]`);
+    if(hiddenInput) hiddenInput.value = nisn;
+    if(searchInput && siswa) searchInput.value = `${siswa.nama} — ${siswa.kelas}`;
+    if(box){ box.innerHTML = ""; box.hidden = true; }
+    if(hint && siswa){ hint.textContent = `Kelas: ${siswa.kelas} · NISN: ${siswa.nisn}`; hint.classList.add("filled"); }
+  });
+
+  // Tutup daftar saran kalau pengguna klik/pindah ke luar kolom pencarian
+  // (diberi jeda singkat supaya tidak bentrok dengan event mousedown di atas).
+  $("#content").addEventListener("focusout", function(e){
+    const inp = e.target.closest('input[data-role="student-search"]');
+    if(!inp) return;
+    const targetName = inp.dataset.target;
+    setTimeout(()=>{
+      const box = document.querySelector(`.student-suggestions[data-suggestions-for="${targetName}"]`);
+      if(box) box.hidden = true;
+    }, 120);
+  });
+
+  /* ---------------- Init ---------------- */
+  $("#brand-title").innerHTML = `Portal Manajemen<br>${escapeHtml(CONFIG.schoolName)}`;
+
+  // Peringatan dini kalau file data belum berhasil dimuat, sebelum pengguna
+  // sempat mencoba login dan bingung kenapa tidak terjadi apa-apa.
+  const missingOnLoad = checkDataLoaded();
+  if(missingOnLoad.length > 0){
+    showLogin(
+      "Aplikasi belum bisa memuat data berikut: " + missingOnLoad.join(", ") + ". " +
+      "Pastikan folder \"data\" dan seluruh isinya berada tepat di sebelah index.html."
+    );
+  } else {
+    const savedUsername = sessionStorage.getItem("sim_sekolah_user");
+    const savedUser = savedUsername ? findUserByUsername(savedUsername) : null;
+    if(savedUser){
+      showDashboard(savedUser);
+    } else {
+      showLogin();
+    }
+  }
+
+  // Jaring pengaman terakhir: kalau ada error JS lain yang tidak tertangkap
+  // (misalnya karena file rusak/termodifikasi), tampilkan di layar login
+  // alih-alih diam-diam gagal tanpa penjelasan.
+  window.addEventListener("error", function(e){
+    if(!$("#dashboard-screen").hidden) return; // hanya tampilkan saat di layar login
+    const box = $("#login-error");
+    if(box.hidden){
+      box.hidden = false;
+      box.textContent = "Terjadi kesalahan teknis: " + (e.message || "tidak diketahui") + ". Coba muat ulang halaman.";
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
