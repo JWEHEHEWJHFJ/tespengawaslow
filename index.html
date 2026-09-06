@@ -338,7 +338,7 @@
       </div>
       <button type="submit" class="btn btn-primary">Masuk</button>
       <div class="demo-hint">
-        <strong>Akun demo</strong> (daftar lengkap & cara ganti ada di <code>README.md</code> dan <code>data/users.js</code>):<br>
+        <strong>Akun demo</strong> (daftar lengkap & cara ganti ada di <code>README.md</code> dan <code>data/users.json</code>):<br>
         <code>gurubk / bk123</code> · <code>wakesis / wakesis123</code> · <code>tu / tu123</code><br>
         <code>osis / osis123</code> · <code>pramuka / pramuka123</code> · <code>pmr / pmr123</code><br>
         <code>kepsek / kepsek123</code> · <code>pengawas / pengawas123</code>
@@ -384,26 +384,90 @@
   <div class="modal-box" id="modal-box"></div>
 </div>
 
-<!-- ===== Data per divisi (dipisah per file agar mudah dikelola masing-masing) ===== -->
-<script src="data/users.js"></script>
-<script src="data/siswa.js"></script>
-<script src="data/guru-bk.js"></script>
-<script src="data/wakasek-kesiswaan.js"></script>
-<script src="data/kurikulum.js"></script>
-<script src="data/humas.js"></script>
-<script src="data/sarpras.js"></script>
-<script src="data/tata-usaha.js"></script>
-<script src="data/osis.js"></script>
-<script src="data/pramuka.js"></script>
-<script src="data/pmr.js"></script>
-<script src="data/paskibra.js"></script>
-<script src="data/laporan-organisasi.js"></script>
+<!-- ===== Data per divisi sekarang disimpan sebagai file .json murni di
+     folder data/ dan dimuat lewat fetch() di dalam <script> di bawah,
+     bukan lagi lewat tag <script src="...js"> terpisah. ===== -->
 
 <script>
 /* =========================================================
    APP LOGIC — login, routing antar dashboard, render tabel/form
    ========================================================= */
-(function(){
+(async function(){
+
+  /* ---------------- Muat seluruh data dari file .json ----------------
+     Sebelumnya tiap divisi punya file data/<nama>.js yang mendefinisikan
+     variabel global (const DATA_XXX = {...}) dan dimuat lewat tag
+     <script src="...">. Sekarang setiap file itu adalah file .json murni
+     (tanpa kode JS), dan diambil di sini dengan fetch() lalu di-parse
+     dengan .json(). Nama variabel di bawah ini SENGAJA disamakan dengan
+     nama variabel lama (USERS, ROLE_INFO, DATA_GURU_BK, dst.) supaya
+     seluruh kode di bawahnya tidak perlu diubah sama sekali. */
+  const DATA_FILES = {
+    users: "data/users.json",
+    siswa: "data/siswa.json",
+    guruBk: "data/guru-bk.json",
+    kesiswaan: "data/wakasek-kesiswaan.json",
+    kurikulum: "data/kurikulum.json",
+    humas: "data/humas.json",
+    sarpras: "data/sarpras.json",
+    tataUsaha: "data/tata-usaha.json",
+    osis: "data/osis.json",
+    pramuka: "data/pramuka.json",
+    pmr: "data/pmr.json",
+    paskibra: "data/paskibra.json",
+    laporanOrganisasi: "data/laporan-organisasi.json"
+  };
+
+  async function fetchJson(url){
+    try{
+      const res = await fetch(url, {cache:"no-store"});
+      if(!res.ok) return undefined;
+      return await res.json();
+    }catch(e){
+      return undefined; // offline / file:// tanpa server / file hilang
+    }
+  }
+
+  const [
+    usersData, SISWA_LIST_RAW, DATA_GURU_BK, DATA_KESISWAAN, DATA_KURIKULUM,
+    DATA_HUMAS, DATA_SARPRAS, DATA_TATA_USAHA, DATA_OSIS, DATA_PRAMUKA,
+    DATA_PMR, DATA_PASKIBRA, organisasiListRaw
+  ] = await Promise.all([
+    fetchJson(DATA_FILES.users),
+    fetchJson(DATA_FILES.siswa),
+    fetchJson(DATA_FILES.guruBk),
+    fetchJson(DATA_FILES.kesiswaan),
+    fetchJson(DATA_FILES.kurikulum),
+    fetchJson(DATA_FILES.humas),
+    fetchJson(DATA_FILES.sarpras),
+    fetchJson(DATA_FILES.tataUsaha),
+    fetchJson(DATA_FILES.osis),
+    fetchJson(DATA_FILES.pramuka),
+    fetchJson(DATA_FILES.pmr),
+    fetchJson(DATA_FILES.paskibra),
+    fetchJson(DATA_FILES.laporanOrganisasi)
+  ]);
+
+  // data/users.json berisi {users, roleInfo, monitoringRoles} sekaligus,
+  // dipecah lagi di sini supaya nama variabel USERS/ROLE_INFO/MONITORING_ROLES
+  // tetap sama seperti sebelumnya.
+  const SISWA_LIST = Array.isArray(SISWA_LIST_RAW) ? SISWA_LIST_RAW : [];
+  const USERS = usersData ? usersData.users : undefined;
+  const ROLE_INFO = usersData ? usersData.roleInfo : undefined;
+  const MONITORING_ROLES = usersData ? usersData.monitoringRoles : undefined;
+
+  // Peta nama organisasi -> objek datanya, dipakai untuk menyambungkan
+  // kembali field "dataKey" (string) di laporan-organisasi.json menjadi
+  // referensi objek data asli (dulu field ini bernama "dataVar" dan berisi
+  // referensi variabel JS langsung; JSON tidak bisa menyimpan referensi
+  // fungsi/objek langsung, jadi disimpan sebagai key string lalu
+  // disambungkan lagi di sini).
+  const ORG_DATA_BY_KEY = {
+    osis: DATA_OSIS, pramuka: DATA_PRAMUKA, pmr: DATA_PMR, paskibra: DATA_PASKIBRA
+  };
+  const ORGANISASI_LIST = Array.isArray(organisasiListRaw)
+    ? organisasiListRaw.map(org => ({ ...org, dataVar: ORG_DATA_BY_KEY[org.dataKey] }))
+    : undefined;
 
   const CONFIG = {
     schoolName: "SMA Negeri 1 Harapan Bangsa" // ganti nama sekolah di sini
@@ -457,27 +521,10 @@
   // _id mana perubahan lampiran harus disimpan.
   const ATTACHMENT_REGISTRY = {};
 
-  /* ---------------- Data siswa terpusat (data/siswa.js) ---------------- */
-  // data/siswa.js sekarang hanya berisi teks mentah SISWA_RAW dengan format
-  // "NISN@Nama@Kelas" per entri, dan antar-entri dipisahkan simbol 🚟
-  // (bukan array objek JavaScript, dan bukan baris baru). Kode di bawah
-  // ini mengubah teks tersebut menjadi SISWA_LIST — array objek
-  // {nisn, nama, kelas} yang dipakai oleh seluruh dashboard.
-  let SISWA_LIST = [];
-  if(typeof SISWA_RAW !== "undefined"){
-    SISWA_LIST = SISWA_RAW
-      .split("🚟")
-      .map(entry => entry.trim())
-      .filter(entry => entry.length > 0)
-      .map(entry => {
-        const parts = entry.split("@");
-        return {
-          nisn: (parts[0] || "").trim(),
-          nama: (parts[1] || "").trim(),
-          kelas: (parts[2] || "").trim()
-        };
-      });
-  }
+  /* ---------------- Data siswa terpusat (data/siswa.json) ---------------- */
+  // data/siswa.json sekarang berisi langsung array objek {nisn, nama, kelas}
+  // (sudah diambil lewat fetch() di atas sebagai SISWA_LIST), jadi tidak
+  // perlu lagi proses parsing teks mentah seperti sebelumnya.
 
   // Dipakai untuk mengisi dropdown "pilih siswa" di form Guru BK,
   // Wakasek Kesiswaan, dan Organisasi Siswa, supaya nama & kelas selalu
@@ -1413,7 +1460,7 @@
   /* =========================================================
      ORGANISASI SISWA (OSIS, Pramuka, PMR, Paskibra, dst.)
      Dibangun secara generik dari ORGANISASI_LIST (lihat
-     data/laporan-organisasi.js) supaya menambah organisasi baru
+     data/laporan-organisasi.json) supaya menambah organisasi baru
      tidak perlu mengubah kode di bawah ini.
      ========================================================= */
   const ORG_GETTERS = {};
@@ -1715,20 +1762,20 @@
   // terjadi secara diam-diam tanpa pesan apa pun ke pengguna.
   function checkDataLoaded(){
     const required = {
-      "USERS (data/users.js)": typeof USERS !== "undefined",
-      "ROLE_INFO (data/users.js)": typeof ROLE_INFO !== "undefined",
-      "SISWA_RAW (data/siswa.js)": typeof SISWA_RAW !== "undefined",
-      "DATA_GURU_BK (data/guru-bk.js)": typeof DATA_GURU_BK !== "undefined",
-      "DATA_KESISWAAN (data/wakasek-kesiswaan.js)": typeof DATA_KESISWAAN !== "undefined",
-      "DATA_KURIKULUM (data/kurikulum.js)": typeof DATA_KURIKULUM !== "undefined",
-      "DATA_HUMAS (data/humas.js)": typeof DATA_HUMAS !== "undefined",
-      "DATA_SARPRAS (data/sarpras.js)": typeof DATA_SARPRAS !== "undefined",
-      "DATA_TATA_USAHA (data/tata-usaha.js)": typeof DATA_TATA_USAHA !== "undefined",
-      "DATA_OSIS (data/osis.js)": typeof DATA_OSIS !== "undefined",
-      "DATA_PRAMUKA (data/pramuka.js)": typeof DATA_PRAMUKA !== "undefined",
-      "DATA_PMR (data/pmr.js)": typeof DATA_PMR !== "undefined",
-      "DATA_PASKIBRA (data/paskibra.js)": typeof DATA_PASKIBRA !== "undefined",
-      "ORGANISASI_LIST (data/laporan-organisasi.js)": typeof ORGANISASI_LIST !== "undefined"
+      "USERS (data/users.json)": USERS !== undefined,
+      "ROLE_INFO (data/users.json)": ROLE_INFO !== undefined,
+      "SISWA_LIST (data/siswa.json)": Array.isArray(SISWA_LIST),
+      "DATA_GURU_BK (data/guru-bk.json)": DATA_GURU_BK !== undefined,
+      "DATA_KESISWAAN (data/wakasek-kesiswaan.json)": DATA_KESISWAAN !== undefined,
+      "DATA_KURIKULUM (data/kurikulum.json)": DATA_KURIKULUM !== undefined,
+      "DATA_HUMAS (data/humas.json)": DATA_HUMAS !== undefined,
+      "DATA_SARPRAS (data/sarpras.json)": DATA_SARPRAS !== undefined,
+      "DATA_TATA_USAHA (data/tata-usaha.json)": DATA_TATA_USAHA !== undefined,
+      "DATA_OSIS (data/osis.json)": DATA_OSIS !== undefined,
+      "DATA_PRAMUKA (data/pramuka.json)": DATA_PRAMUKA !== undefined,
+      "DATA_PMR (data/pmr.json)": DATA_PMR !== undefined,
+      "DATA_PASKIBRA (data/paskibra.json)": DATA_PASKIBRA !== undefined,
+      "ORGANISASI_LIST (data/laporan-organisasi.json)": ORGANISASI_LIST !== undefined
     };
     const missing = Object.keys(required).filter(k => !required[k]);
     return missing;
@@ -2050,7 +2097,10 @@
   if(missingOnLoad.length > 0){
     showLogin(
       "Aplikasi belum bisa memuat data berikut: " + missingOnLoad.join(", ") + ". " +
-      "Pastikan folder \"data\" dan seluruh isinya berada tepat di sebelah index.html."
+      "Pastikan folder \"data\" (berisi file .json) berada tepat di sebelah index.html, " +
+      "dan aplikasi diakses lewat server web (mis. GitHub Pages, atau jalankan " +
+      "\"python3 -m http.server\" lalu buka melalui http://localhost) — membuka index.html " +
+      "langsung dengan cara klik dua kali (file://) biasanya diblokir browser saat memuat file .json."
     );
   } else {
     const savedUsername = sessionStorage.getItem("sim_sekolah_user");

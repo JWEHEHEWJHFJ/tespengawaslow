@@ -16,24 +16,48 @@ login sekolah dengan dashboard berbeda untuk tiap jabatan:
 ## Struktur file
 
 ```
-index.html                     ← halaman login + seluruh dashboard (HTML/CSS/JS jadi satu)
-data/users.js                  ← daftar akun & peran (role) untuk login
-data/guru-bk.js                ← data khusus dashboard Guru BK
-data/wakasek-kesiswaan.js      ← data khusus dashboard Wakasek Kesiswaan
-data/kurikulum.js              ← data khusus dashboard Wakasek Kurikulum
-data/humas.js                  ← data khusus dashboard Wakasek Humas
-data/sarpras.js                ← data khusus dashboard Wakasek Sarpras
-data/tata-usaha.js             ← data khusus dashboard Tata Usaha
-data/osis.js                   ← data khusus dashboard OSIS
-data/pramuka.js                ← data khusus dashboard Pramuka
-data/pmr.js                    ← data khusus dashboard PMR
-data/paskibra.js               ← data khusus dashboard Paskibra
-data/laporan-organisasi.js     ← daftar organisasi siswa yang dipantau Wakasek Kesiswaan / Kepala Sekolah / Pengawas
+index.html                       ← halaman login + seluruh dashboard (HTML/CSS/JS jadi satu)
+data/users.json                  ← daftar akun, ROLE_INFO & MONITORING_ROLES untuk login
+data/siswa.json                  ← master data siswa: array [{nisn, nama, kelas}, ...]
+data/guru-bk.json                ← data khusus dashboard Guru BK
+data/wakasek-kesiswaan.json      ← data khusus dashboard Wakasek Kesiswaan
+data/kurikulum.json              ← data khusus dashboard Wakasek Kurikulum
+data/humas.json                  ← data khusus dashboard Wakasek Humas
+data/sarpras.json                ← data khusus dashboard Wakasek Sarpras
+data/tata-usaha.json             ← data khusus dashboard Tata Usaha
+data/osis.json                   ← data khusus dashboard OSIS
+data/pramuka.json                ← data khusus dashboard Pramuka
+data/pmr.json                    ← data khusus dashboard PMR
+data/paskibra.json               ← data khusus dashboard Paskibra
+data/laporan-organisasi.json     ← daftar organisasi siswa yang dipantau Wakasek Kesiswaan / Kepala Sekolah / Pengawas
 ```
 
-`index.html` memuat kelima file data di atas dengan `<script src="...">`,
-jadi tiap divisi bisa mengelola datanya sendiri di file terpisah tanpa
-menyentuh file yang lain.
+**Perubahan dari versi sebelumnya:** semua file di folder `data/` sekarang
+adalah file **`.json` murni** (bukan lagi `.js` yang mendefinisikan
+`const DATA_XXX = {...}`). `index.html` memuat semuanya lewat `fetch()` di
+dalam `<script>` (bukan lagi lewat tag `<script src="data/....js">`).
+Keuntungannya: file `.json` bisa dibuka/diedit oleh siapa pun tanpa perlu
+mengerti sintaks JavaScript sama sekali (tidak ada `const`, tidak ada
+`//` komentar, murni data), dan lebih mudah dihasilkan/diproses oleh
+program lain (Python, Google Sheets → JSON, dsb).
+
+`data/siswa.json` sekarang juga sudah berupa array JSON biasa
+`[{ "nisn": "...", "nama": "...", "kelas": "..." }, ...]` — format teks
+`NISN@Nama@Kelas` dengan pemisah `🚟` pada versi lama sudah tidak dipakai
+lagi.
+
+`data/laporan-organisasi.json` menyimpan field `"dataKey"` (string, misalnya
+`"osis"`) alih-alih referensi objek JS langsung seperti versi lama
+(`dataVar: DATA_OSIS`), karena JSON tidak bisa menyimpan referensi kode.
+`index.html` menyambungkan kembali `dataKey` ini ke data organisasi yang
+sesuai setelah semua file JSON selesai dimuat.
+
+⚠️ **Karena sekarang memakai `fetch()`, aplikasi harus diakses lewat
+server web** (GitHub Pages, atau server lokal seperti
+`python3 -m http.server` lalu buka `http://localhost:8000`). Membuka
+`index.html` langsung dengan cara klik dua kali dari File Explorer
+(`file://...`) biasanya akan diblokir browser saat memuat file `.json`
+karena kebijakan CORS pada skema `file://`.
 
 ## Cara deploy ke GitHub Pages
 
@@ -47,7 +71,7 @@ menyentuh file yang lain.
 
 ## Akun demo (ganti sebelum dipakai sungguhan)
 
-Semua akun didefinisikan di `data/users.js`:
+Semua akun didefinisikan di `data/users.json`:
 
 | Username    | Password       | Peran                  |
 |-------------|----------------|-------------------------|
@@ -66,6 +90,10 @@ Semua akun didefinisikan di `data/users.js`:
 
 Untuk mengganti nama sekolah, buka `index.html`, cari objek `CONFIG` di
 bagian `<script>` paling bawah, dan ubah `schoolName`.
+
+Untuk mengubah data dummy (kasus BK, kegiatan, anggota organisasi, dsb.),
+cukup buka file `.json` yang sesuai di folder `data/` dan edit langsung —
+tidak perlu menyentuh `index.html` sama sekali.
 
 ## Fitur tiap dashboard
 
@@ -89,20 +117,24 @@ data yang sama.
 
 ## Menambah organisasi siswa baru (mis. Rohis, KIR, dsb.)
 
-Karena dashboard organisasi dibangun secara generik dari `data/laporan-organisasi.js`,
+Karena dashboard organisasi dibangun secara generik dari `data/laporan-organisasi.json`,
 menambah organisasi baru tidak perlu mengubah kode dashboard sama sekali:
 
-1. Buat file baru, misalnya `data/rohis.js`, dengan struktur field yang sama
-   seperti `data/osis.js` (`namaOrganisasi`, `periode`, `pembina`, `anggota`,
+1. Buat file baru, misalnya `data/rohis.json`, dengan struktur field yang sama
+   seperti `data/osis.json` (`namaOrganisasi`, `periode`, `pembina`, `anggota`,
    `programKerja`, `kegiatan`, `keuangan`, `lpj`).
-2. Tambahkan akun login untuk organisasi tersebut di `data/users.js`
-   (isi `role` dengan id organisasi, misalnya `"rohis"`).
-3. Tambahkan tampilan role-nya di `ROLE_INFO` (juga di `data/users.js`).
-4. Tambahkan satu baris entri baru di `ORGANISASI_LIST` pada
-   `data/laporan-organisasi.js`.
-5. Muat file `data/rohis.js` di `index.html` **sebelum**
-   `data/laporan-organisasi.js` (letakkan tag `<script src="data/rohis.js">`
-   di antara file organisasi lain dan file laporan-organisasi.js).
+2. Tambahkan akun login untuk organisasi tersebut di `data/users.json`
+   (isi `role` dengan id organisasi, misalnya `"rohis"`, di dalam array `users`).
+3. Tambahkan tampilan role-nya di objek `roleInfo` (juga di `data/users.json`).
+4. Tambahkan satu entri baru di array `data/laporan-organisasi.json`, misalnya:
+   ```json
+   { "id": "rohis", "roleKey": "rohis", "label": "Rohis", "color": "#0891b2", "dataKey": "rohis" }
+   ```
+5. Di `index.html`, tambahkan `"rohis.json"` pada daftar `DATA_FILES` dan
+   pada bagian `Promise.all([...])` / `ORG_DATA_BY_KEY` di dekat awal
+   `<script>` paling bawah, mengikuti pola organisasi yang sudah ada
+   (osis/pramuka/pmr/paskibra), supaya file barunya ikut diambil lewat
+   `fetch()` dan `dataKey: "rohis"` bisa disambungkan ke datanya.
 
 Setelah itu, organisasi baru otomatis punya dashboard lengkap (Ringkasan,
 Anggota, Program Kerja, Kegiatan, Keuangan, LPJ) dan otomatis muncul di
