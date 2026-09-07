@@ -405,19 +405,16 @@
   const DATA_FILES = {
     users: "data/users.json",
     siswa: "data/siswa.json",
-    // Guru BK, Wakasek Kesiswaan, dan daftar organisasi siswa dikelompokkan
-    // di dalam folder data/waksis/ (data-data yang berkaitan dengan urusan
-    // Kesiswaan: BK, organisasi, dan Kesiswaan sendiri).
     guruBk: "data/waksis/guru-bk.json",
     kesiswaan: "data/waksis/wakasek-kesiswaan.json",
     kurikulum: "data/kurikulum.json",
     humas: "data/humas.json",
     sarpras: "data/sarpras.json",
     tataUsaha: "data/tata-usaha.json",
-    osis: "data/osis.json",
-    pramuka: "data/pramuka.json",
-    pmr: "data/pmr.json",
-    paskibra: "data/paskibra.json",
+    osis: "data/waksis/osis.json",
+    pramuka: "data/waksis/pramuka.json",
+    pmr: "data/waksis/pmr.json",
+    paskibra: "data/waksis/paskibra.json",
     laporanOrganisasi: "data/waksis/laporan-organisasi.json"
   };
 
@@ -696,38 +693,17 @@
   }
 
   function openDeleteModal(entry){
-    const isGithubBacked = entry.key === "kesiswaan_akun";
     openModal(`
       <h3>Hapus data ini?</h3>
-      <p class="modal-sub">Tindakan ini tidak bisa dibatalkan. Baris data pada <strong>${escapeHtml(entry.title)}</strong> akan dihapus secara permanen${isGithubBacked ? " dari data/users.json (lewat GitHub)" : " dari daftar"}.</p>
+      <p class="modal-sub">Tindakan ini tidak bisa dibatalkan. Baris data pada <strong>${escapeHtml(entry.title)}</strong> akan dihapus secara permanen dari daftar.</p>
       <div class="modal-actions">
         <button type="button" class="btn btn-outline" data-modal-close>Batal</button>
         <button type="button" class="btn btn-danger" id="confirm-delete-btn">Ya, hapus data</button>
       </div>`);
-    $("#confirm-delete-btn").addEventListener("click", async function(){
-      if(!isGithubBacked){
-        markDeleted(entry.key, entry.row._id);
-        closeModal();
-        renderRoute(currentView);
-        return;
-      }
-      // Akun Guru BK/Organisasi: hapus langsung dari array USERS (sumber
-      // asli findUser/findUserByUsername), lalu commit ke GitHub. Kalau
-      // gagal, kembalikan (rollback) baris yang sudah dihapus tadi.
-      const btn = this;
-      btn.disabled = true; btn.textContent = "Menghapus...";
-      const idx = USERS.findIndex(u => u._id === entry.row._id);
-      if(idx === -1){ closeModal(); renderRoute(currentView); return; }
-      const removed = USERS.splice(idx, 1)[0];
-      try{
-        await commitUsersToGitHub();
-        closeModal();
-        renderRoute(currentView);
-      }catch(err){
-        USERS.splice(idx, 0, removed); // rollback
-        btn.disabled = false; btn.textContent = "Ya, hapus data";
-        alert("Gagal menghapus akun di GitHub: " + err.message);
-      }
+    $("#confirm-delete-btn").addEventListener("click", function(){
+      markDeleted(entry.key, entry.row._id);
+      closeModal();
+      renderRoute(currentView);
     });
   }
 
@@ -745,14 +721,7 @@
           </div>`;
       }
       if(f.type==="select"){
-        // f.options bisa berisi string biasa ("Selesai") ATAU objek
-        // {value,label} (dipakai saat teks yang tampil ke pengguna berbeda
-        // dari value yang disimpan, mis. dropdown "Peran" pada Admin Akun).
-        const opts = f.options.map(o=>{
-          const val = (o && typeof o === "object") ? o.value : o;
-          const lbl = (o && typeof o === "object") ? o.label : o;
-          return `<option value="${escapeHtml(val)}" ${val===currentVal?"selected":""}>${escapeHtml(lbl)}</option>`;
-        }).join("");
+        const opts = f.options.map(o=>`<option value="${escapeHtml(o)}" ${o===currentVal?"selected":""}>${escapeHtml(o)}</option>`).join("");
         return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><select name="${f.name}">${opts}</select></div>`;
       }
       if(f.type==="textarea"){
@@ -787,7 +756,7 @@
         </div>
       </form>`);
 
-    $("#edit-row-form").addEventListener("submit", async function(e){
+    $("#edit-row-form").addEventListener("submit", function(e){
       e.preventDefault();
       const patch = {};
       fields.forEach(f=>{
@@ -795,45 +764,9 @@
         const el = e.target.elements[f.name];
         if(el) patch[f.name] = el.value;
       });
-      const isGithubBacked = entry.key === "kesiswaan_akun";
-      if(!isGithubBacked){
-        saveEditOverride(entry.key, row._id, patch);
-        closeModal();
-        renderRoute(currentView);
-        return;
-      }
-
-      // Akun Guru BK/Organisasi: validasi, terapkan langsung ke objek di
-      // dalam USERS (row adalah referensi asli, bukan salinan), lalu commit
-      // ke GitHub. Kalau gagal, kembalikan (rollback) nilai lama.
-      const username = (patch.username||"").trim();
-      const password = patch.password||"";
-      const name = (patch.name||"").trim();
-      const jabatan = (patch.jabatan||"").trim();
-      const role = patch.role;
-      if(!username || !password || !name || !jabatan || !role){
-        alert("Mohon lengkapi semua kolom (nama, jabatan, peran, username, dan kata sandi).");
-        return;
-      }
-      const dipakaiAkunLain = USERS.some(u => u !== row && u.username.toLowerCase() === username.toLowerCase());
-      if(dipakaiAkunLain){
-        alert(`Username "${username}" sudah dipakai akun lain. Silakan gunakan username yang berbeda.`);
-        return;
-      }
-      const original = Object.assign({}, row);
-      Object.assign(row, { username, password, name, jabatan, role });
-
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = "Menyimpan..."; }
-      try{
-        await commitUsersToGitHub();
-        closeModal();
-        renderRoute(currentView);
-      }catch(err){
-        Object.assign(row, original); // rollback
-        if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = "Simpan perubahan"; }
-        alert("Gagal menyimpan perubahan ke GitHub: " + err.message);
-      }
+      saveEditOverride(entry.key, row._id, patch);
+      closeModal();
+      renderRoute(currentView);
     });
   }
 
@@ -856,12 +789,7 @@
           </div>`;
       }
       if(f.type==="select"){
-        // Lihat catatan yang sama di openEditModal soal opsi berbentuk objek {value,label}.
-        const opts = f.options.map(o=>{
-          const val = (o && typeof o === "object") ? o.value : o;
-          const lbl = (o && typeof o === "object") ? o.label : o;
-          return `<option value="${escapeHtml(val)}">${escapeHtml(lbl)}</option>`;
-        }).join("");
+        const opts = f.options.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
         return `<div class="field ${cls}"><label>${escapeHtml(f.label)}</label><select name="${f.name}">${opts}</select></div>`;
       }
       if(f.type==="textarea"){
@@ -998,6 +926,23 @@
   const getSuratKeluar       = ()=> withExtra("tu_surat_keluar", DATA_TATA_USAHA.suratKeluar);
   const getAdministrasiSiswa = ()=> withExtra("tu_administrasi_siswa", DATA_TATA_USAHA.administrasiSiswa);
   const getKeuangan          = ()=> withExtra("tu_keuangan", DATA_TATA_USAHA.keuangan);
+
+  /* ---------------- Akun Guru BK & Organisasi buatan Wakasek Kesiswaan ----------------
+     Karena aplikasi ini statis (tanpa server/database), akun baru yang dibuat
+     lewat panel "Admin BK & Organisasi" TIDAK benar-benar ditulis ke file
+     data/users.json di server — melainkan disimpan di localStorage browser
+     ini (key "extra_waksis_admin_users"), memakai pola yang sama seperti
+     data tambahan lain di aplikasi ini (lihat withExtra/addExtra di atas).
+     Fungsi login (findUser/findUserByUsername) menggabungkan akun bawaan
+     dari data/users.json dengan akun tambahan ini, supaya akun yang baru
+     dibuat bisa langsung dipakai login dari browser yang sama. */
+  const getAkunTambahanBkOrganisasi = ()=> withExtra("waksis_admin_users", []);
+  const getAllLoginUsers = ()=> USERS.concat(
+    getAkunTambahanBkOrganisasi().map(u => ({
+      username: u.username, password: u.password, role: u.role,
+      name: u.name, jabatan: u.jabatan
+    }))
+  );
 
   /* =========================================================
      DEFINISI FIELD FORM (dipakai bersama oleh form "Tambah data"
@@ -1532,7 +1477,7 @@
   /* =========================================================
      ORGANISASI SISWA (OSIS, Pramuka, PMR, Paskibra, dst.)
      Dibangun secara generik dari ORGANISASI_LIST (lihat
-     data/laporan-organisasi.json) supaya menambah organisasi baru
+     data/waksis/laporan-organisasi.json) supaya menambah organisasi baru
      tidak perlu mengubah kode di bawah ini.
      ========================================================= */
   const ORG_GETTERS = {};
@@ -1770,226 +1715,65 @@
   );
 
   /* =========================================================
-     ADMIN AKUN BK & ORGANISASI (menu khusus Wakasek Kesiswaan)
-     Lewat menu ini, Wakasek Kesiswaan bisa membuat & mengubah akun
-     login (username/password) untuk Guru BK dan tiap organisasi
-     siswa (OSIS, Pramuka, PMR, Paskibra, dst — mengikuti ORGANISASI_LIST).
-
-     BEDA dari fitur "Tambah data" lain di aplikasi ini: akun yang
-     dibuat/diubah di sini TIDAK disimpan sebagai lapisan localStorage
-     di atas data asli, melainkan benar-benar DITULIS ULANG ke file
-     data/users.json di repository GitHub lewat GitHub Contents API
-     (commit otomatis), supaya akun barunya bisa dipakai login dari
-     perangkat/browser SIAPA PUN — bukan cuma di browser yang dipakai
-     Wakasek Kesiswaan saat membuatnya.
-
-     Konsekuensi & catatan penting:
-     - Wajib mengisi "Pengaturan GitHub" (owner/repo/branch/path file,
-       dan Personal Access Token dengan scope tulis ke repo) satu kali;
-       tersimpan di localStorage browser Wakasek Kesiswaan saja.
-     - Karena token disimpan di localStorage & dipakai langsung dari
-       browser, JANGAN pakai token dengan akses lebih dari yang perlu
-       (idealnya fine-grained token yang di-scope hanya ke repo ini),
-       dan jangan pakai perangkat/browser bersama yang tidak tepercaya.
-     - Setelah commit sukses, GitHub Pages butuh waktu singkat (biasanya
-       beberapa puluh detik) untuk menayangkan ulang file yang baru.
+     ADMIN AKUN GURU BK & ORGANISASI (khusus Wakasek Kesiswaan)
+     Panel ini memungkinkan Wakasek Kesiswaan membuat username &
+     password baru untuk Guru BK atau salah satu organisasi siswa
+     (OSIS/Pramuka/PMR/Paskibra/dst.), supaya mereka bisa login.
+     Lihat catatan di getAkunTambahanBkOrganisasi() di atas soal
+     bagaimana & di mana akun ini sebenarnya disimpan.
      ========================================================= */
-  function getManagedAccountRoles(){
-    const roles = [{ role:"guru_bk", label: ROLE_INFO.guru_bk.label }];
-    ORGANISASI_LIST.forEach(org=>{
-      roles.push({ role: org.roleKey, label: org.label });
-    });
-    return roles;
-  }
-  const MANAGED_ACCOUNT_ROLE_KEYS = getManagedAccountRoles().map(r=>r.role);
+  // Daftar peran yang boleh dibuatkan akun lewat panel ini: Guru BK +
+  // seluruh organisasi yang terdaftar di ORGANISASI_LIST (otomatis ikut
+  // kalau ada organisasi baru ditambahkan).
+  const ADMIN_AKUN_ROLE_OPTIONS = ["Guru BK"].concat(ORGANISASI_LIST.map(o=>o.label));
+  const ADMIN_AKUN_LABEL_TO_ROLEKEY = { "Guru BK": "guru_bk" };
+  ORGANISASI_LIST.forEach(o => { ADMIN_AKUN_LABEL_TO_ROLEKEY[o.label] = o.roleKey; });
 
-  // Beri setiap akun bawaan data/users.json sebuah _id stabil (dipakai
-  // tabel & tombol edit/hapus), berdasarkan username (unik per akun).
-  USERS.forEach(u=>{ if(!u._id) u._id = "u_" + u.username; });
-
-  // Hanya akun Guru BK & Organisasi yang dikelola/ditampilkan di menu ini.
-  // Ini adalah REFERENSI LANGSUNG ke objek di dalam USERS (bukan salinan),
-  // supaya perubahan lewat edit/hapus/tambah langsung berlaku pada USERS
-  // yang juga dipakai proses login (findUser/findUserByUsername).
-  function getManagedAccounts(){
-    return USERS.filter(u => MANAGED_ACCOUNT_ROLE_KEYS.indexOf(u.role) !== -1);
-  }
-
-  /* ---------- Pengaturan koneksi GitHub (disimpan di localStorage) ---------- */
-  function getGithubConfig(){
-    try{ return JSON.parse(localStorage.getItem("sim_github_config") || "{}"); }
-    catch(e){ return {}; }
-  }
-  function saveGithubConfig(cfg){
-    localStorage.setItem("sim_github_config", JSON.stringify(cfg));
-  }
-
-  // btoa() bawaan browser hanya menangani karakter Latin1, jadi nama/isi
-  // dengan karakter non-ASCII perlu di-encode dulu supaya tidak error.
-  function utf8ToBase64(str){
-    return btoa(unescape(encodeURIComponent(str)));
-  }
-
-  // Mengambil sha file saat ini lalu menimpanya (commit) dengan isi USERS
-  // yang sudah diperbarui. Melempar Error (dengan pesan dalam Bahasa
-  // Indonesia yang siap ditampilkan lewat alert) kalau gagal di langkah mana pun.
-  async function commitUsersToGitHub(){
-    const cfg = getGithubConfig();
-    if(!cfg.token || !cfg.owner || !cfg.repo || !cfg.branch || !cfg.path){
-      throw new Error("Pengaturan GitHub belum lengkap. Buka bagian \"Pengaturan GitHub\" di atas, isi Owner, Repo, Branch, Path file, dan Personal Access Token, lalu simpan dulu.");
-    }
-    const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`;
-    const headers = {
-      "Authorization": `Bearer ${cfg.token}`,
-      "Accept": "application/vnd.github+json"
-    };
-
-    let sha;
-    try{
-      const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
-      if(!getRes.ok){
-        throw new Error(`Gagal mengambil data/users.json terbaru dari GitHub (status ${getRes.status}). Periksa Owner, Repo, Branch, Path file, dan pastikan Token masih berlaku dan punya akses ke repo ini.`);
-      }
-      const getData = await getRes.json();
-      sha = getData.sha;
-    }catch(err){
-      if(err instanceof TypeError){
-        throw new Error("Gagal terhubung ke GitHub. Periksa koneksi internet, lalu coba lagi.");
-      }
-      throw err;
-    }
-
-    const newUsersData = { users: USERS.map(u=>{
-        const clone = Object.assign({}, u);
-        delete clone._id; // _id hanya dipakai internal aplikasi, jangan ikut ditulis ke users.json
-        return clone;
-      }), roleInfo: ROLE_INFO, monitoringRoles: MONITORING_ROLES };
-    const newContentStr = JSON.stringify(newUsersData, null, 2);
-
-    const putRes = await fetch(apiUrl, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({
-        message: "Perbarui data/users.json lewat menu Admin BK & Organisasi",
-        content: utf8ToBase64(newContentStr),
-        sha: sha,
-        branch: cfg.branch
-      })
-    });
-    if(!putRes.ok){
-      let pesan = "";
-      try{ const errBody = await putRes.json(); pesan = errBody.message || ""; }catch(e){}
-      throw new Error(`Gagal menyimpan perubahan ke GitHub (status ${putRes.status}). ${pesan}`.trim());
-    }
-  }
-
-  function githubConfigFormHtml(){
-    const cfg = getGithubConfig();
-    const owner = cfg.owner || "";
-    const repo = cfg.repo || "";
-    const branch = cfg.branch || "main";
-    const path = cfg.path || "data/users.json";
-    const tokenHint = cfg.token
-      ? "Token sudah tersimpan di browser ini. Kosongkan kolom token supaya tetap memakai yang lama, atau isi untuk menggantinya."
-      : "Token belum diisi — wajib diisi agar penyimpanan ke GitHub bisa berjalan.";
-    return `
-      <details class="add-box">
-        <summary>Pengaturan GitHub (isi/ periksa sekali sebelum membuat akun)</summary>
-        <div class="add-box-body">
-          <form data-form-id="github-config">
-            <div class="form-grid">
-              <div class="field"><label>GitHub Owner / Organisasi</label><input type="text" name="owner" value="${escapeHtml(owner)}" placeholder="contoh: JWEHEHEWJHFJ"></div>
-              <div class="field"><label>Nama Repository</label><input type="text" name="repo" value="${escapeHtml(repo)}" placeholder="contoh: tespengawas"></div>
-              <div class="field"><label>Branch</label><input type="text" name="branch" value="${escapeHtml(branch)}" placeholder="main"></div>
-              <div class="field full"><label>Path file users.json di repo</label><input type="text" name="path" value="${escapeHtml(path)}"></div>
-              <div class="field full">
-                <label>GitHub Personal Access Token (scope: repo / Contents: Read and write)</label>
-                <input type="password" name="token" placeholder="ghp_..." autocomplete="off">
-                <div class="student-hint">${escapeHtml(tokenHint)}</div>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-gold">Simpan pengaturan GitHub</button>
-          </form>
-        </div>
-      </details>`;
-  }
-
-  FORM_HANDLERS["github-config"] = (data)=>{
-    const prev = getGithubConfig();
-    const cfg = {
-      owner: (data.owner||"").trim() || prev.owner || "",
-      repo: (data.repo||"").trim() || prev.repo || "",
-      branch: (data.branch||"").trim() || prev.branch || "main",
-      path: (data.path||"").trim() || prev.path || "data/users.json",
-      token: (data.token||"").trim() || prev.token || ""
-    };
-    if(!cfg.owner || !cfg.repo || !cfg.token){
-      alert("Mohon isi minimal Owner, Repo, dan Personal Access Token GitHub.");
-      return;
-    }
-    saveGithubConfig(cfg);
-    alert("Pengaturan GitHub tersimpan di browser ini.");
-    renderRoute(currentView);
-  };
-
-  const FIELDS_KESISWAAN_AKUN = [
+  const FIELDS_ADMIN_AKUN = [
+    {name:"roleLabel", label:"Dibuatkan untuk", type:"select", options: ADMIN_AKUN_ROLE_OPTIONS},
     {name:"name", label:"Nama lengkap", full:true},
-    {name:"jabatan", label:"Jabatan (contoh: Guru BK, Ketua OSIS)", full:true},
-    {name:"role", label:"Peran / akses dashboard", type:"select",
-      options: getManagedAccountRoles().map(r=>({value:r.role, label:r.label}))},
     {name:"username", label:"Username"},
-    {name:"password", label:"Kata sandi", type:"password"}
+    {name:"password", label:"Password", type:"password"}
   ];
 
-  // Handler ini ASYNC (mengembalikan Promise) — delegasi submit form di
-  // bawah (lihat "finishSubmit") menunggu Promise ini selesai sebelum
-  // menutup/mereset form, dan membatalkan reset kalau terjadi kegagalan.
-  FORM_HANDLERS["kesiswaan-akun-baru"] = async (data)=>{
-    const username = (data.username||"").trim();
-    const password = data.password||"";
-    const name = (data.name||"").trim();
-    const jabatan = (data.jabatan||"").trim();
-    const role = data.role;
-    if(!username || !password || !name || !jabatan || !role){
-      alert("Mohon lengkapi semua kolom (nama, jabatan, peran, username, dan kata sandi).");
-      throw new Error("validasi gagal");
-    }
-    const sudahAda = USERS.some(u => u.username.toLowerCase() === username.toLowerCase());
-    if(sudahAda){
-      alert(`Username "${username}" sudah dipakai akun lain. Silakan gunakan username yang berbeda.`);
-      throw new Error("username duplikat");
-    }
-    const akunBaru = { username, password, role, name, jabatan, _id: "u_" + username };
-    USERS.push(akunBaru); // optimistic: tampilkan dulu, di-rollback kalau commit gagal
-    try{
-      await commitUsersToGitHub();
-    }catch(err){
-      USERS.splice(USERS.indexOf(akunBaru), 1); // rollback
-      alert("Gagal menyimpan akun baru ke GitHub: " + err.message);
-      throw err;
-    }
+  FORM_HANDLERS["kesiswaan-admin-akun"] = (data)=>{
+    const roleKey = ADMIN_AKUN_LABEL_TO_ROLEKEY[data.roleLabel] || "guru_bk";
+    addExtra("waksis_admin_users", {
+      username: (data.username||"").trim(),
+      password: data.password || "",
+      role: roleKey,
+      name: data.name || "",
+      jabatan: (ROLE_INFO[roleKey] ? ROLE_INFO[roleKey].label : data.roleLabel)
+    });
   };
 
+  // Kolom tabel akun BK/organisasi dipakai baik untuk akun bawaan (read-only)
+  // maupun akun tambahan (bisa diedit/dihapus lewat renderTable actionsConfig).
+  const KOLOM_AKUN_BK_ORGANISASI = [
+    {key:"jabatan", label:"Peran"},
+    {key:"name", label:"Nama"},
+    {key:"username", label:"Username"},
+    {key:"password", label:"Password"}
+  ];
+
   VIEWS.kesiswaan_admin_akun = ()=>{
-    const accounts = getManagedAccounts();
+    const akunBawaan = USERS.filter(u =>
+      u.role === "guru_bk" || ORGANISASI_LIST.some(o => o.roleKey === u.role)
+    );
+    const akunTambahan = getAkunTambahanBkOrganisasi();
     return `
       <div class="section">
-        ${sectionHead("Pengaturan penyimpanan", "Akun yang dibuat/diubah di halaman ini ditulis langsung ke data/users.json lewat GitHub, supaya bisa langsung dipakai login dari perangkat mana pun.")}
-        ${githubConfigFormHtml()}
+        ${sectionHead("Buat akun baru", "Akun baru bisa langsung dipakai login oleh Guru BK / pengurus organisasi bersangkutan")}
+        ${addForm("kesiswaan-admin-akun", "+ Buat akun Guru BK / Organisasi", FIELDS_ADMIN_AKUN)}
       </div>
       <div class="section">
-        ${sectionHead("Buat akun Guru BK / Organisasi")}
-        ${addForm("kesiswaan-akun-baru", "+ Buat akun baru", FIELDS_KESISWAAN_AKUN)}
+        ${sectionHead("Akun yang dibuat lewat panel ini")}
+        ${renderTable(akunTambahan, KOLOM_AKUN_BK_ORGANISASI,
+          {key:"waksis_admin_users", title:"Akun Guru BK & Organisasi", fields:FIELDS_ADMIN_AKUN})}
       </div>
       <div class="section">
-        ${sectionHead("Daftar akun Guru BK & Organisasi")}
-        ${renderTable(accounts, [
-          {key:"name", label:"Nama"},
-          {key:"jabatan", label:"Jabatan"},
-          {key:"role", label:"Peran (kode akses)"},
-          {key:"username", label:"Username"},
-          {key:"password", label:"Kata Sandi"}
-        ], {key:"kesiswaan_akun", title:"Akun Guru BK / Organisasi", fields: FIELDS_KESISWAAN_AKUN})}
+        ${sectionHead("Akun bawaan (demo)", "Akun ini sudah ada sejak awal dan tidak bisa diubah lewat panel ini")}
+        ${renderTable(akunBawaan, KOLOM_AKUN_BK_ORGANISASI)}
       </div>`;
   };
 
@@ -2006,13 +1790,10 @@
   let orgLaporanFilter = "semua"; // id organisasi yang dipilih pada Laporan Organisasi ("semua" = tampilkan semua)
 
   function findUser(username, password){
-    // USERS memuat akun bawaan data/users.json + akun Guru BK/Organisasi
-    // yang dibuat lewat menu "Admin BK & Organisasi" (ikut termuat karena
-    // akun baru langsung di-push ke array USERS yang sama).
-    return USERS.find(u => u.username===username && u.password===password) || null;
+    return getAllLoginUsers().find(u => u.username===username && u.password===password) || null;
   }
   function findUserByUsername(username){
-    return USERS.find(u => u.username===username) || null;
+    return getAllLoginUsers().find(u => u.username===username) || null;
   }
 
   function showLogin(message){
@@ -2074,10 +1855,10 @@
       "DATA_HUMAS (data/humas.json)": DATA_HUMAS !== undefined,
       "DATA_SARPRAS (data/sarpras.json)": DATA_SARPRAS !== undefined,
       "DATA_TATA_USAHA (data/tata-usaha.json)": DATA_TATA_USAHA !== undefined,
-      "DATA_OSIS (data/osis.json)": DATA_OSIS !== undefined,
-      "DATA_PRAMUKA (data/pramuka.json)": DATA_PRAMUKA !== undefined,
-      "DATA_PMR (data/pmr.json)": DATA_PMR !== undefined,
-      "DATA_PASKIBRA (data/paskibra.json)": DATA_PASKIBRA !== undefined,
+      "DATA_OSIS (data/waksis/osis.json)": DATA_OSIS !== undefined,
+      "DATA_PRAMUKA (data/waksis/pramuka.json)": DATA_PRAMUKA !== undefined,
+      "DATA_PMR (data/waksis/pmr.json)": DATA_PMR !== undefined,
+      "DATA_PASKIBRA (data/waksis/paskibra.json)": DATA_PASKIBRA !== undefined,
       "ORGANISASI_LIST (data/waksis/laporan-organisasi.json)": ORGANISASI_LIST !== undefined
     };
     const missing = Object.keys(required).filter(k => !required[k]);
@@ -2199,28 +1980,33 @@
       return;
     }
 
+    // Validasi khusus form "Buat akun Guru BK / Organisasi": username & password
+    // wajib diisi, dan username tidak boleh sama dengan akun yang sudah ada
+    // (baik akun bawaan di data/users.json maupun akun tambahan lain).
+    if(formId === "kesiswaan-admin-akun"){
+      const usernameEl = form.querySelector('[name="username"]');
+      const passwordEl = form.querySelector('[name="password"]');
+      const usernameVal = ((usernameEl && usernameEl.value) || "").trim();
+      const passwordVal = ((passwordEl && passwordEl.value) || "").trim();
+      if(!usernameVal || !passwordVal){
+        alert("Username dan password wajib diisi.");
+        return;
+      }
+      const sudahDipakai = getAllLoginUsers().some(u => u.username.toLowerCase() === usernameVal.toLowerCase());
+      if(sudahDipakai){
+        alert(`Username "${usernameVal}" sudah dipakai akun lain. Silakan pilih username yang berbeda.`);
+        return;
+      }
+    }
+
     // Kumpulkan nilai field teks biasa (kolom file ditangani terpisah di bawah)
     const data = {};
     Array.from(form.elements).forEach(el=>{
       if(el.name && el.type !== "file") data[el.name] = el.value;
     });
 
-    async function finishSubmit(){
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const originalBtnText = submitBtn ? submitBtn.textContent : null;
-      let result;
-      try{
-        if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = "Menyimpan..."; }
-        result = handler(data, currentUser);
-        if(result && typeof result.then === "function") await result;
-      }catch(err){
-        // Handler async (mis. simpan akun ke GitHub) sudah menampilkan alert
-        // pesan errornya sendiri — di sini cukup batalkan reset/re-render
-        // supaya data yang sudah diketik pengguna tidak hilang percuma.
-        if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
-        return;
-      }
-      if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
+    function finishSubmit(){
+      handler(data, currentUser);
       form.reset();
       // Setelah reset, pastikan field tanggal bersyarat kembali ke kondisi
       // nonaktif (form.reset() tidak selalu memicu event "change").
