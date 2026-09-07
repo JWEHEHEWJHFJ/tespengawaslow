@@ -431,12 +431,6 @@
     }
   }
 
-  // Diambil bersamaan dengan data lain: config repo GitHub (owner/repo/
-  // branch/path/token) sekarang datang dari github-repo-config.json,
-  // BUKAN lagi ditulis langsung di index.html (lihat catatan kerentanan
-  // di deklarasi GITHUB_REPO_CONFIG di atas).
-  await loadGithubRepoConfig();
-
   const [
     usersData, SISWA_LIST_RAW, DATA_GURU_BK, DATA_KESISWAAN, DATA_KURIKULUM,
     DATA_HUMAS, DATA_SARPRAS, DATA_TATA_USAHA, DATA_OSIS, DATA_PRAMUKA,
@@ -481,35 +475,6 @@
   const CONFIG = {
     schoolName: "SMA Negeri 1 Harapan Bangsa" // ganti nama sekolah di sini
   };
-
-  /* =========================================================
-     ⚠️ DEMO KERENTANAN KEAMANAN (untuk tugas akhir kuliah keamanan
-     siber) — JANGAN PERNAH DIPAKAI DENGAN TOKEN ASLI/AKTIF ⚠️
-
-     index.html SEKARANG SENGAJA "dibersihkan" dari data konfigurasi
-     repo GitHub (owner/repo/branch/path/token) — semuanya dipindah ke
-     file terpisah github-repo-config.json dan diambil di sini lewat
-     fetch() saat halaman dimuat. Tujuannya menunjukkan bahwa MEMINDAH
-     rahasia ke file lain TIDAK membuatnya aman: file JSON itu tetap
-     ikut ter-deploy ke GitHub Pages dan tetap bisa diambil SIAPA SAJA
-     lewat URL publiknya (mis. https://<user>.github.io/<repo>/
-     github-repo-config.json) tanpa autentikasi apa pun — persis semudah
-     membuka file itu lewat "View Page Source" pada index.html.
-
-     github-repo-config.json di project ini sengaja diisi TOKEN PALSU
-     (format ghp_XXXX...X, bukan token aktif) supaya kerentanannya bisa
-     didemokan dengan aman tanpa membocorkan kredensial sungguhan.
-     Kalau nilai token di file itu diganti dengan token asli yang
-     benar-benar aktif, siapa pun yang menemukan URL file JSON tersebut
-     otomatis punya akses tulis ke repo GitHub terkait.
-     ========================================================= */
-  let GITHUB_REPO_CONFIG = { owner:"", repo:"", branch:"main", path:"data/users.json", token:"" };
-  async function loadGithubRepoConfig(){
-    try{
-      const res = await fetch("github-repo-config.json");
-      if(res.ok) GITHUB_REPO_CONFIG = Object.assign({}, GITHUB_REPO_CONFIG, await res.json());
-    }catch(e){ /* biarkan default kosong kalau file tidak ada/gagal diambil */ }
-  }
 
   const $  = (sel, root) => (root||document).querySelector(sel);
   const $$ = (sel, root) => Array.from((root||document).querySelectorAll(sel));
@@ -1819,15 +1784,13 @@
      Wakasek Kesiswaan saat membuatnya.
 
      Konsekuensi & catatan penting:
-     - Owner/Repo/Branch/Path file sudah tetap lewat GITHUB_REPO_CONFIG
-       (lihat dekat const CONFIG di atas) — tidak perlu diisi manual lagi.
-       Hanya Personal Access Token (scope tulis ke repo) yang diminta
-       lewat prompt() satu kali per sesi browser, tersimpan sementara
-       di sessionStorage (Wakasek Kesiswaan saja, hilang saat tab ditutup).
-     - Karena token dipakai langsung dari browser, JANGAN pakai token
-       dengan akses lebih dari yang perlu (idealnya fine-grained token
-       yang di-scope hanya ke repo ini), dan jangan pakai perangkat/
-       browser bersama yang tidak tepercaya.
+     - Wajib mengisi "Pengaturan GitHub" (owner/repo/branch/path file,
+       dan Personal Access Token dengan scope tulis ke repo) satu kali;
+       tersimpan di localStorage browser Wakasek Kesiswaan saja.
+     - Karena token disimpan di localStorage & dipakai langsung dari
+       browser, JANGAN pakai token dengan akses lebih dari yang perlu
+       (idealnya fine-grained token yang di-scope hanya ke repo ini),
+       dan jangan pakai perangkat/browser bersama yang tidak tepercaya.
      - Setelah commit sukses, GitHub Pages butuh waktu singkat (biasanya
        beberapa puluh detik) untuk menayangkan ulang file yang baru.
      ========================================================= */
@@ -1852,15 +1815,13 @@
     return USERS.filter(u => MANAGED_ACCOUNT_ROLE_KEYS.indexOf(u.role) !== -1);
   }
 
-  /* ---------- Pengaturan koneksi GitHub ----------
-     ⚠️ DEMO KERENTANAN: owner/repo/branch/path/TOKEN semuanya diambil
-     dari GITHUB_REPO_CONFIG, yang isinya datang dari fetch() ke
-     github-repo-config.json (file publik, lihat catatan di deklarasi
-     GITHUB_REPO_CONFIG di atas). Tidak ada lagi input token manual di
-     UI — ini SENGAJA menunjukkan bahwa siapa pun yang membuka file JSON
-     tersebut otomatis dapat token yang sama, tanpa perlu tahap apa pun. */
+  /* ---------- Pengaturan koneksi GitHub (disimpan di localStorage) ---------- */
   function getGithubConfig(){
-    return GITHUB_REPO_CONFIG;
+    try{ return JSON.parse(localStorage.getItem("sim_github_config") || "{}"); }
+    catch(e){ return {}; }
+  }
+  function saveGithubConfig(cfg){
+    localStorage.setItem("sim_github_config", JSON.stringify(cfg));
   }
 
   // btoa() bawaan browser hanya menangani karakter Latin1, jadi nama/isi
@@ -1874,8 +1835,8 @@
   // Indonesia yang siap ditampilkan lewat alert) kalau gagal di langkah mana pun.
   async function commitUsersToGitHub(){
     const cfg = getGithubConfig();
-    if(!cfg.token || !cfg.owner || !cfg.repo){
-      throw new Error("github-repo-config.json belum lengkap (owner/repo/token). Lengkapi dulu file itu di repo Anda.");
+    if(!cfg.token || !cfg.owner || !cfg.repo || !cfg.branch || !cfg.path){
+      throw new Error("Pengaturan GitHub belum lengkap. Buka bagian \"Pengaturan GitHub\" di atas, isi Owner, Repo, Branch, Path file, dan Personal Access Token, lalu simpan dulu.");
     }
     const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`;
     const headers = {
@@ -1887,7 +1848,7 @@
     try{
       const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
       if(!getRes.ok){
-        throw new Error(`Gagal mengambil data/users.json terbaru dari GitHub (status ${getRes.status}). Pastikan token di github-repo-config.json masih berlaku dan punya akses (Contents: Read and write) ke repo ${cfg.owner}/${cfg.repo}.`);
+        throw new Error(`Gagal mengambil data/users.json terbaru dari GitHub (status ${getRes.status}). Periksa Owner, Repo, Branch, Path file, dan pastikan Token masih berlaku dan punya akses ke repo ini.`);
       }
       const getData = await getRes.json();
       sha = getData.sha;
@@ -1922,24 +1883,54 @@
     }
   }
 
-  // Bagian "Pengaturan GitHub" (form owner/repo/branch/path/token) sudah
-  // dihapus dari index.html — semua nilai itu sekarang datang dari
-  // github-repo-config.json lewat fetch() (lihat loadGithubRepoConfig
-  // & catatan kerentanan di deklarasi GITHUB_REPO_CONFIG di atas).
-  function githubTokenStatusHtml(){
-    const configReady = !!(GITHUB_REPO_CONFIG.owner && GITHUB_REPO_CONFIG.repo && GITHUB_REPO_CONFIG.token);
+  function githubConfigFormHtml(){
+    const cfg = getGithubConfig();
+    const owner = cfg.owner || "";
+    const repo = cfg.repo || "";
+    const branch = cfg.branch || "main";
+    const path = cfg.path || "data/users.json";
+    const tokenHint = cfg.token
+      ? "Token sudah tersimpan di browser ini. Kosongkan kolom token supaya tetap memakai yang lama, atau isi untuk menggantinya."
+      : "Token belum diisi — wajib diisi agar penyimpanan ke GitHub bisa berjalan.";
     return `
-      <div class="add-box">
+      <details class="add-box">
+        <summary>Pengaturan GitHub (isi/ periksa sekali sebelum membuat akun)</summary>
         <div class="add-box-body">
-          <p class="student-hint">
-            Tujuan penyimpanan: <strong>${escapeHtml(GITHUB_REPO_CONFIG.owner||"(belum diisi)")}/${escapeHtml(GITHUB_REPO_CONFIG.repo||"(belum diisi)")}</strong>
-            (branch <strong>${escapeHtml(GITHUB_REPO_CONFIG.branch||"-")}</strong>, file <strong>${escapeHtml(GITHUB_REPO_CONFIG.path||"-")}</strong>).
-            Konfigurasi ini (termasuk token) dibaca langsung dari <code>github-repo-config.json</code> di repo ini.
-            ${configReady ? "" : " Lengkapi dulu file itu supaya penyimpanan ke GitHub bisa berjalan."}
-          </p>
+          <form data-form-id="github-config">
+            <div class="form-grid">
+              <div class="field"><label>GitHub Owner / Organisasi</label><input type="text" name="owner" value="${escapeHtml(owner)}" placeholder="contoh: JWEHEHEWJHFJ"></div>
+              <div class="field"><label>Nama Repository</label><input type="text" name="repo" value="${escapeHtml(repo)}" placeholder="contoh: tespengawas"></div>
+              <div class="field"><label>Branch</label><input type="text" name="branch" value="${escapeHtml(branch)}" placeholder="main"></div>
+              <div class="field full"><label>Path file users.json di repo</label><input type="text" name="path" value="${escapeHtml(path)}"></div>
+              <div class="field full">
+                <label>GitHub Personal Access Token (scope: repo / Contents: Read and write)</label>
+                <input type="password" name="token" placeholder="ghp_..." autocomplete="off">
+                <div class="student-hint">${escapeHtml(tokenHint)}</div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-gold">Simpan pengaturan GitHub</button>
+          </form>
         </div>
-      </div>`;
+      </details>`;
   }
+
+  FORM_HANDLERS["github-config"] = (data)=>{
+    const prev = getGithubConfig();
+    const cfg = {
+      owner: (data.owner||"").trim() || prev.owner || "",
+      repo: (data.repo||"").trim() || prev.repo || "",
+      branch: (data.branch||"").trim() || prev.branch || "main",
+      path: (data.path||"").trim() || prev.path || "data/users.json",
+      token: (data.token||"").trim() || prev.token || ""
+    };
+    if(!cfg.owner || !cfg.repo || !cfg.token){
+      alert("Mohon isi minimal Owner, Repo, dan Personal Access Token GitHub.");
+      return;
+    }
+    saveGithubConfig(cfg);
+    alert("Pengaturan GitHub tersimpan di browser ini.");
+    renderRoute(currentView);
+  };
 
   const FIELDS_KESISWAAN_AKUN = [
     {name:"name", label:"Nama lengkap", full:true},
@@ -1984,7 +1975,7 @@
     return `
       <div class="section">
         ${sectionHead("Pengaturan penyimpanan", "Akun yang dibuat/diubah di halaman ini ditulis langsung ke data/users.json lewat GitHub, supaya bisa langsung dipakai login dari perangkat mana pun.")}
-        ${githubTokenStatusHtml()}
+        ${githubConfigFormHtml()}
       </div>
       <div class="section">
         ${sectionHead("Buat akun Guru BK / Organisasi")}
