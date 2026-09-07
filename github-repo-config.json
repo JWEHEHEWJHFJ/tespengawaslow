@@ -1,8 +1,0 @@
-{
-  "owner": "JWEHEHEWJHFJ",
-  "repo": "tespengawaslow",
-  "branch": "main",
-  "path": "data/users.json",
-  "token": "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",
-  "_PERINGATAN": "Ini file JSON PUBLIK — ikut ter-deploy ke GitHub Pages dan bisa diakses siapa saja lewat URL-nya langsung, tanpa login. JANGAN PERNAH mengganti nilai 'token' di atas dengan Personal Access Token GitHub yang ASLI/AKTIF: siapa pun yang membuka file ini otomatis mendapat akses tulis penuh ke repo terkait. Nilai token di atas hanya contoh format (bukan token aktif), untuk demonstrasi kerentanan pada tugas keamanan siber."
-}
