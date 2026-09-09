@@ -1,0 +1,17 @@
+{
+  "ringkasan": { "totalMataPelajaran": 14, "jadwalUjianBulanIni": 3, "capaianRataRata": "82%" },
+  "jadwalUjian": [
+    { "tanggal": "2026-09-15", "kegiatan": "Ujian Tengah Semester Ganjil", "kelas": "X, XI, XII" },
+    { "tanggal": "2026-09-20", "kegiatan": "Penilaian Harian Matematika", "kelas": "XI IPA" }
+  ],
+  "capaianKurikulum": [
+    { "mapel": "Matematika", "capaian": "85%" },
+    { "mapel": "Bahasa Indonesia", "capaian": "90%" },
+    { "mapel": "Fisika", "capaian": "78%" }
+  ],
+  "mataPelajaran": [
+    { "kode": "MTK", "nama": "Matematika", "guruPengampu": "Drs. Slamet Riyadi" },
+    { "kode": "BIN", "nama": "Bahasa Indonesia", "guruPengampu": "Sri Wahyuni, S.Pd." },
+    { "kode": "FIS", "nama": "Fisika", "guruPengampu": "Ir. Dodi Kurniawan" }
+  ]
+}

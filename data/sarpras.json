@@ -1,0 +1,16 @@
+{
+  "ringkasan": { "totalAset": 320, "pengajuanTertunda": 2, "ruangKondisiBaik": "88%" },
+  "inventaris": [
+    { "nama": "Proyektor LCD", "jumlah": 18, "kondisi": "Baik" },
+    { "nama": "Komputer Lab", "jumlah": 40, "kondisi": "Baik" },
+    { "nama": "Meja Siswa", "jumlah": 480, "kondisi": "Sebagian Rusak" }
+  ],
+  "pengajuanPerbaikan": [
+    { "tanggal": "2026-09-05", "item": "AC Ruang Guru", "keterangan": "Tidak dingin", "status": "Diproses" },
+    { "tanggal": "2026-09-02", "item": "Atap Lab IPA", "keterangan": "Bocor saat hujan", "status": "Diajukan" }
+  ],
+  "kondisiRuang": [
+    { "ruang": "Ruang Kelas X IPA 1", "kondisi": "Baik" },
+    { "ruang": "Laboratorium Kimia", "kondisi": "Perlu Perhatian" }
+  ]
+}

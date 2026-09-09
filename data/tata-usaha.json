@@ -1,0 +1,17 @@
+{
+  "ringkasan": { "suratMasukBulanIni": 2, "suratKeluarBulanIni": 1, "tunggakanPembayaran": 1 },
+  "suratMasuk": [
+    { "tanggal": "2026-09-03", "perihal": "Undangan Rapat Dinas Pendidikan", "pengirim": "Dinas Pendidikan Kota" },
+    { "tanggal": "2026-08-25", "perihal": "Penawaran Kerjasama Percetakan", "pengirim": "CV Cetak Jaya" }
+  ],
+  "suratKeluar": [
+    { "tanggal": "2026-08-30", "perihal": "Laporan Kegiatan Semester Ganjil", "tujuan": "Dinas Pendidikan Kota" }
+  ],
+  "administrasiSiswa": [
+    { "tanggal": "2026-09-01", "siswa": "Rangga Saputra", "jenis": "Keluar/Pindah" }
+  ],
+  "keuangan": [
+    { "tanggal": "2026-09-01", "siswa": "Ahmad Fauzan", "keterangan": "SPP September", "nominal": 350000, "status": "Lunas" },
+    { "tanggal": "2026-09-01", "siswa": "Dewi Anggraini", "keterangan": "SPP September", "nominal": 350000, "status": "Belum Lunas" }
+  ]
+}

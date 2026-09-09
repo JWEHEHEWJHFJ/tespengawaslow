@@ -1,0 +1,14 @@
+{
+  "pelanggaran": [
+    { "tanggal": "2026-09-04", "siswa": "Rangga Saputra", "jenis": "Terlambat masuk sekolah", "poin": 5 }
+  ],
+  "prestasi": [
+    { "tanggal": "2026-08-15", "siswa": "Ahmad Fauzan", "prestasi": "Juara 1 Olimpiade Matematika", "tingkat": "Kota" }
+  ],
+  "ekstrakurikuler": [
+    { "nama": "OSIS", "pembina": "Drs. Bambang Wijaya, M.Pd." },
+    { "nama": "Pramuka", "pembina": "Ir. Agus Santoso" },
+    { "nama": "PMR", "pembina": "Dra. Fitriani Ramadhani" },
+    { "nama": "Paskibra", "pembina": "Aditya Nugraha" }
+  ]
+}

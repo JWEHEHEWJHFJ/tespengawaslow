@@ -1,0 +1,31 @@
+{
+  "accounts": [
+    { "username": "gurubk", "password": "bk123", "nama": "Dra. Fitriani Ramadhani", "jabatan": "Guru BK", "role": "gurubk" },
+    { "username": "wakesis", "password": "wakesis123", "nama": "Drs. Bambang Wijaya, M.Pd.", "jabatan": "Wakasek Kesiswaan", "role": "wakesis" },
+    { "username": "kurikulum", "password": "kurikulum123", "nama": "Dra. Yuni Astuti, M.Pd.", "jabatan": "Wakasek Kurikulum", "role": "kurikulum" },
+    { "username": "humas", "password": "humas123", "nama": "Drs. Hendra Kusuma", "jabatan": "Wakasek Humas", "role": "humas" },
+    { "username": "sarpras", "password": "sarpras123", "nama": "Ir. Agus Santoso", "jabatan": "Wakasek Sarana Prasarana", "role": "sarpras" },
+    { "username": "tu", "password": "tu123", "nama": "Ratna Dewi, S.E.", "jabatan": "Kepala Tata Usaha", "role": "tu" },
+    { "username": "osis", "password": "osis123", "nama": "Rizky Pratama", "jabatan": "Ketua OSIS", "role": "osis" },
+    { "username": "pramuka", "password": "pramuka123", "nama": "Nadia Salsabila", "jabatan": "Pradana Putri", "role": "pramuka" },
+    { "username": "pmr", "password": "pmr123", "nama": "Farhan Maulana", "jabatan": "Ketua PMR", "role": "pmr" },
+    { "username": "paskibra", "password": "paskibra123", "nama": "Aditya Nugraha", "jabatan": "Komandan Paskibra", "role": "paskibra" },
+    { "username": "kepsek", "password": "kepsek123", "nama": "Hj. Siti Rahmawati, S.Pd., M.M.", "jabatan": "Kepala Sekolah", "role": "kepsek" },
+    { "username": "pengawas", "password": "pengawas123", "nama": "Dr. Ahmad Sutrisno, M.Pd.", "jabatan": "Pengawas Sekolah", "role": "pengawas" }
+  ],
+  "roleInfo": {
+    "gurubk": { "label": "Guru BK", "warna": "#8e7cc3" },
+    "wakesis": { "label": "Wakasek Kesiswaan", "warna": "#b7862a" },
+    "kurikulum": { "label": "Wakasek Kurikulum", "warna": "#4a90c4" },
+    "humas": { "label": "Wakasek Humas", "warna": "#c47a4a" },
+    "sarpras": { "label": "Wakasek Sarpras", "warna": "#6ba36b" },
+    "tu": { "label": "Tata Usaha", "warna": "#9c9c9c" },
+    "osis": { "label": "Ketua OSIS", "warna": "#c0392b" },
+    "pramuka": { "label": "Pradana Pramuka", "warna": "#8a5a3b" },
+    "pmr": { "label": "Ketua PMR", "warna": "#c0392b" },
+    "paskibra": { "label": "Komandan Paskibra", "warna": "#1b2a4a" },
+    "kepsek": { "label": "Kepala Sekolah", "warna": "#b7862a" },
+    "pengawas": { "label": "Pengawas Sekolah", "warna": "#1b2a4a" }
+  },
+  "monitoringRoles": ["kepsek", "pengawas"]
+}

@@ -1,0 +1,6 @@
+[
+  { "id": "osis", "label": "OSIS", "warna": "#c0392b", "dataKey": "osis" },
+  { "id": "pramuka", "label": "Pramuka", "warna": "#8a5a3b", "dataKey": "pramuka" },
+  { "id": "pmr", "label": "PMR", "warna": "#c0392b", "dataKey": "pmr" },
+  { "id": "paskibra", "label": "Paskibra", "warna": "#1b2a4a", "dataKey": "paskibra" }
+]

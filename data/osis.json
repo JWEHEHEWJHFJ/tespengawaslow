@@ -1,0 +1,23 @@
+{
+  "namaOrganisasi": "OSIS SMA Negeri 1 Harapan Bangsa",
+  "periode": "2026/2027",
+  "pembina": "Drs. Bambang Wijaya, M.Pd.",
+  "anggota": [
+    { "nisn": "0051234567", "nama": "Ahmad Fauzan", "kelas": "XI IPA 1", "jabatan": "Ketua" },
+    { "nisn": "0051234570", "nama": "Dewi Anggraini", "kelas": "X IPS 1", "jabatan": "Sekretaris" }
+  ],
+  "programKerja": [
+    { "nama": "Masa Pengenalan Lingkungan Sekolah", "bidang": "Kesiswaan", "target": "Siswa Baru", "capaian": "100%", "status": "Selesai" },
+    { "nama": "Pentas Seni Akhir Tahun", "bidang": "Kesenian", "target": "Seluruh Siswa", "capaian": "-", "status": "Belum Mulai" }
+  ],
+  "kegiatan": [
+    { "tanggalMulai": "2026-07-14", "tanggalSelesai": "2026-07-16", "deskripsi": "MPLS Siswa Baru", "status": "Selesai" }
+  ],
+  "keuangan": [
+    { "tanggal": "2026-07-01", "keterangan": "Dana Kegiatan dari Sekolah", "jenis": "Pemasukan", "nominal": 5000000 },
+    { "tanggal": "2026-07-16", "keterangan": "Konsumsi MPLS", "jenis": "Pengeluaran", "nominal": 2200000 }
+  ],
+  "lpj": [
+    { "periode": "Semester Genap 2025/2026", "penyusun": "Rizky Pratama (Ketua OSIS)", "isi": "Seluruh program kerja semester genap terlaksana dengan baik.", "lampiran": null }
+  ]
+}

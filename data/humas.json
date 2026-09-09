@@ -1,0 +1,15 @@
+{
+  "ringkasan": { "kegiatanBulanIni": 2, "mitraAktif": 5, "publikasiBulanIni": 3 },
+  "kegiatan": [
+    { "tanggal": "2026-09-12", "nama": "Kunjungan Industri ke PT Maju Bersama", "status": "Rencana" },
+    { "tanggal": "2026-08-28", "nama": "Open House Sekolah", "status": "Selesai" }
+  ],
+  "kerjasamaMitra": [
+    { "mitra": "PT Maju Bersama", "bentuk": "Kunjungan Industri & PKL" },
+    { "mitra": "Universitas Harapan Bangsa", "bentuk": "Kelas Motivasi & Beasiswa" }
+  ],
+  "publikasi": [
+    { "tanggal": "2026-09-01", "judul": "Prestasi Siswa di Olimpiade Sains", "kanal": "Instagram Sekolah" },
+    { "tanggal": "2026-08-20", "judul": "Laporan Kegiatan Open House", "kanal": "Website Sekolah" }
+  ]
+}

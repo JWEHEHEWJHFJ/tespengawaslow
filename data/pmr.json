@@ -1,0 +1,19 @@
+{
+  "namaOrganisasi": "Palang Merah Remaja (PMR) SMA Negeri 1 Harapan Bangsa",
+  "periode": "2026/2027",
+  "pembina": "Dra. Fitriani Ramadhani",
+  "anggota": [
+    { "nisn": "0051234572", "nama": "Fitri Handayani", "kelas": "XII IPA 3", "jabatan": "Wakil Ketua" }
+  ],
+  "programKerja": [
+    { "nama": "Pelatihan Pertolongan Pertama", "bidang": "Kesehatan", "target": "Anggota Baru", "capaian": "-", "status": "Belum Mulai" }
+  ],
+  "kegiatan": [
+    { "tanggalMulai": "2026-08-10", "tanggalSelesai": "2026-08-10", "deskripsi": "Donor Darah Sekolah", "status": "Selesai" }
+  ],
+  "keuangan": [
+    { "tanggal": "2026-08-01", "keterangan": "Dana Kegiatan dari Sekolah", "jenis": "Pemasukan", "nominal": 1500000 },
+    { "tanggal": "2026-08-10", "keterangan": "Konsumsi Donor Darah", "jenis": "Pengeluaran", "nominal": 800000 }
+  ],
+  "lpj": []
+}

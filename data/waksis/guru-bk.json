@@ -1,0 +1,9 @@
+{
+  "kasus": [
+    { "tanggal": "2026-09-04", "siswa": "Rangga Saputra", "kategori": "Kedisiplinan", "deskripsi": "Sering terlambat masuk kelas", "status": "Diproses" },
+    { "tanggal": "2026-08-20", "siswa": "Bunga Citra Lestari", "kategori": "Akademik", "deskripsi": "Konsultasi kesulitan belajar Matematika", "status": "Selesai" }
+  ],
+  "jadwalKonseling": [
+    { "tanggal": "2026-09-10", "waktu": "09.00 - 09.30", "siswa": "Rangga Saputra", "topik": "Evaluasi kedisiplinan" }
+  ]
+}

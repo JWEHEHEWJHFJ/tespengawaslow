@@ -1,0 +1,18 @@
+{
+  "namaOrganisasi": "Paskibra SMA Negeri 1 Harapan Bangsa",
+  "periode": "2026/2027",
+  "pembina": "Aditya Nugraha",
+  "anggota": [
+    { "nisn": "0051234569", "nama": "Chandra Wijaya", "kelas": "XI IPA 2", "jabatan": "Komandan Peleton" }
+  ],
+  "programKerja": [
+    { "nama": "Latihan Rutin Baris-Berbaris", "bidang": "Kedisiplinan", "target": "Seluruh Anggota", "capaian": "-", "status": "Berjalan" }
+  ],
+  "kegiatan": [
+    { "tanggalMulai": "2026-08-17", "tanggalSelesai": "2026-08-17", "deskripsi": "Upacara HUT RI", "status": "Selesai" }
+  ],
+  "keuangan": [
+    { "tanggal": "2026-08-01", "keterangan": "Dana Kegiatan dari Sekolah", "jenis": "Pemasukan", "nominal": 2000000 }
+  ],
+  "lpj": []
+}

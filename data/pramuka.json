@@ -1,0 +1,18 @@
+{
+  "namaOrganisasi": "Gerakan Pramuka Gugus Depan SMA Negeri 1 Harapan Bangsa",
+  "periode": "2026/2027",
+  "pembina": "Ir. Agus Santoso",
+  "anggota": [
+    { "nisn": "0051234574", "nama": "Hana Salsabila", "kelas": "XI IPS 2", "jabatan": "Pradana Putri" }
+  ],
+  "programKerja": [
+    { "nama": "Perkemahan Jumat-Sabtu-Minggu (Persami)", "bidang": "Kepramukaan", "target": "Kelas X", "capaian": "-", "status": "Berjalan" }
+  ],
+  "kegiatan": [
+    { "tanggalMulai": "2026-09-25", "tanggalSelesai": "2026-09-27", "deskripsi": "Persami Kelas X", "status": "Rencana" }
+  ],
+  "keuangan": [
+    { "tanggal": "2026-08-01", "keterangan": "Dana Kegiatan dari Sekolah", "jenis": "Pemasukan", "nominal": 3000000 }
+  ],
+  "lpj": []
+}
