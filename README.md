@@ -16,29 +16,22 @@ login sekolah dengan dashboard berbeda untuk tiap jabatan:
 ## Struktur file
 
 ```
-index.html                                ← halaman login + seluruh dashboard (HTML/CSS/JS jadi satu)
-data/users.json                           ← daftar akun, ROLE_INFO & MONITORING_ROLES untuk login
-data/siswa.json                           ← master data siswa: array [{nisn, nama, kelas}, ...]
-data/kurikulum.json                       ← data khusus dashboard Wakasek Kurikulum
-data/humas.json                           ← data khusus dashboard Wakasek Humas
-data/sarpras.json                         ← data khusus dashboard Wakasek Sarpras
-data/tata-usaha.json                      ← data khusus dashboard Tata Usaha
-data/waksis/guru-bk.json                  ← data khusus dashboard Guru BK
-data/waksis/wakasek-kesiswaan.json        ← data khusus dashboard Wakasek Kesiswaan
-data/waksis/osis.json                     ← data khusus dashboard OSIS
-data/waksis/pramuka.json                  ← data khusus dashboard Pramuka
-data/waksis/pmr.json                      ← data khusus dashboard PMR
-data/waksis/paskibra.json                 ← data khusus dashboard Paskibra
-data/waksis/laporan-organisasi.json       ← daftar organisasi siswa yang dipantau Wakasek Kesiswaan / Kepala Sekolah / Pengawas
+index.html                       ← halaman login + seluruh dashboard (HTML/CSS/JS jadi satu)
+data/users.json                  ← daftar akun, ROLE_INFO & MONITORING_ROLES untuk login
+data/siswa.json                  ← master data siswa: array [{nisn, nama, kelas}, ...]
+data/waksis/                     ← data-data yang berkaitan dengan urusan Kesiswaan
+data/waksis/guru-bk.json         ← data khusus dashboard Guru BK
+data/waksis/wakasek-kesiswaan.json ← data khusus dashboard Wakasek Kesiswaan
+data/waksis/laporan-organisasi.json ← daftar organisasi siswa yang dipantau Wakasek Kesiswaan / Kepala Sekolah / Pengawas
+data/kurikulum.json              ← data khusus dashboard Wakasek Kurikulum
+data/humas.json                  ← data khusus dashboard Wakasek Humas
+data/sarpras.json                ← data khusus dashboard Wakasek Sarpras
+data/tata-usaha.json             ← data khusus dashboard Tata Usaha
+data/osis.json                   ← data khusus dashboard OSIS
+data/pramuka.json                ← data khusus dashboard Pramuka
+data/pmr.json                    ← data khusus dashboard PMR
+data/paskibra.json               ← data khusus dashboard Paskibra
 ```
-
-**Folder `data/waksis/`** mengelompokkan seluruh data yang berhubungan dengan
-ruang lingkup Wakasek Kesiswaan: data Guru BK, data organisasi siswa
-(OSIS/Pramuka/PMR/Paskibra + daftar organisasinya), dan data Kesiswaan itu
-sendiri — mengikuti fakta bahwa Wakasek Kesiswaan-lah yang memantau ketiganya
-lewat tab "Laporan BK" dan "Laporan Organisasi" (lihat bagian *Fitur tiap
-dashboard* di bawah). Divisi lain (Kurikulum, Humas, Sarpras, Tata Usaha)
-tetap di `data/` langsung karena tidak dipantau lintas-tab oleh siapa pun.
 
 **Perubahan dari versi sebelumnya:** semua file di folder `data/` sekarang
 adalah file **`.json` murni** (bukan lagi `.js` yang mendefinisikan
@@ -54,7 +47,7 @@ program lain (Python, Google Sheets → JSON, dsb).
 `NISN@Nama@Kelas` dengan pemisah `🚟` pada versi lama sudah tidak dipakai
 lagi.
 
-`data/waksis/laporan-organisasi.json` menyimpan field `"dataKey"` (string, misalnya
+`data/laporan-organisasi.json` menyimpan field `"dataKey"` (string, misalnya
 `"osis"`) alih-alih referensi objek JS langsung seperti versi lama
 (`dataVar: DATA_OSIS`), karena JSON tidak bisa menyimpan referensi kode.
 `index.html` menyambungkan kembali `dataKey` ini ke data organisasi yang
@@ -106,10 +99,7 @@ tidak perlu menyentuh `index.html` sama sekali.
 ## Fitur tiap dashboard
 
 - **Guru BK**: ringkasan kasus, data kasus BK (bisa tambah kasus baru), jadwal konseling.
-- **Wakasek Kesiswaan**: ringkasan, pelanggaran siswa (bisa tambah), prestasi siswa (bisa tambah), daftar
-  ekstrakurikuler, **Laporan BK** (baca data Guru BK, read-only), **Laporan Organisasi** (baca data 4 organisasi
-  siswa, read-only), dan **Admin BK & Organisasi** — panel untuk membuat akun login (username & password) baru
-  bagi Guru BK atau salah satu organisasi siswa (lihat penjelasan lengkap di bawah).
+- **Wakasek Kesiswaan**: ringkasan, pelanggaran siswa (bisa tambah), prestasi siswa (bisa tambah), daftar ekstrakurikuler.
 - **Wakasek Kurikulum**: ringkasan, jadwal ujian (bisa tambah agenda), capaian kurikulum, daftar mata pelajaran.
 - **Wakasek Humas**: ringkasan, kegiatan (bisa tambah), kerjasama mitra, publikasi (bisa tambah).
 - **Wakasek Sarpras**: ringkasan aset, inventaris, pengajuan perbaikan (bisa tambah), kondisi ruang.
@@ -121,65 +111,44 @@ tidak perlu menyentuh `index.html` sama sekali.
   organisasi ke Pembina, Wakasek Kesiswaan, dan pimpinan sekolah.
 - **Kepala Sekolah & Pengawas Sekolah**: ringkasan lintas semua divisi & organisasi di atas (read-only) ditambah halaman
   **Catatan Pemantauan** untuk menuliskan arahan/pembinaan yang tersimpan dan bisa dilihat bersama.
+- **Wakasek Kesiswaan → Admin BK & Organisasi**: tab khusus untuk membuat & mengubah akun login (nama, jabatan,
+  peran, username, password) untuk Guru BK maupun untuk tiap organisasi siswa (OSIS, Pramuka, PMR, Paskibra, dst).
+  Akun yang dibuat/diubah di sini **benar-benar ditulis ulang ke `data/users.json` di repository GitHub** lewat
+  GitHub Contents API (commit otomatis dari browser), sehingga langsung bisa dipakai login dari perangkat mana pun
+  — bukan cuma disimpan lokal di `localStorage`. Supaya ini bisa jalan, Wakasek Kesiswaan perlu mengisi sekali
+  bagian **"Pengaturan GitHub"** di tab yang sama:
+  - **Owner/Organisasi**, **Repository**, **Branch**, dan **Path file** (`data/users.json`) dari repo yang dipakai
+    untuk hosting aplikasi ini.
+  - **Personal Access Token GitHub** dengan izin tulis ke repo tersebut (untuk *classic token* pilih scope `repo`;
+    untuk *fine-grained token* beri akses **Contents: Read and write** khusus ke repo ini).
+
+  ⚠️ Token ini tersimpan di `localStorage` browser yang dipakai untuk mengisinya dan dipakai langsung dari
+  JavaScript di browser tersebut. Karena itu: pakai token dengan akses seminimal mungkin (idealnya *fine-grained
+  token* yang di-scope hanya ke repo ini, bukan token dengan akses ke seluruh akun GitHub), dan jangan isi token
+  ini di perangkat/browser bersama yang tidak tepercaya. Setelah commit berhasil, GitHub Pages biasanya perlu
+  waktu singkat (beberapa puluh detik) untuk menayangkan ulang `users.json` versi terbaru.
 
 Data baru yang ditambahkan lewat form "+ Tambah ..." langsung ikut muncul di
 dashboard Kepala Sekolah dan Pengawas Sekolah, karena keduanya membaca sumber
 data yang sama.
-
-## Admin BK & Organisasi (fitur Wakasek Kesiswaan)
-
-Tab **"Admin BK & Organisasi"** di dashboard Wakasek Kesiswaan memungkinkan
-Wakasek Kesiswaan membuat akun login baru untuk Guru BK atau salah satu
-organisasi siswa (OSIS/Pramuka/PMR/Paskibra), tanpa perlu mengedit
-`data/users.json` secara manual:
-
-1. Isi form "Buat akun Guru BK / Organisasi": pilih peran (Guru BK / OSIS /
-   Pramuka / PMR / Paskibra), nama lengkap, username, dan password.
-2. Klik "Simpan data". Aplikasi otomatis menolak jika username kosong,
-   password kosong, atau username sudah dipakai akun lain (baik akun bawaan
-   maupun akun buatan sebelumnya).
-3. Akun baru langsung muncul di tabel "Akun yang dibuat lewat panel ini"
-   (bisa diedit/dihapus lagi dari tabel tersebut), dan **langsung bisa
-   dipakai untuk login** oleh pemiliknya di halaman login.
-4. Akun bawaan/demo (yang sudah ada sejak awal di `data/users.json`)
-   ditampilkan terpisah di tabel "Akun bawaan (demo)" sebagai referensi,
-   dan tidak bisa diubah lewat panel ini.
-
-⚠️ **Cara kerja di baliknya (penting dipahami):** karena aplikasi ini statis
-tanpa server/database, akun baru **tidak benar-benar dituliskan ke dalam
-file `data/users.json`**. Akun tersebut disimpan di `localStorage` browser
-(kunci `extra_waksis_admin_users`), lalu digabungkan dengan `data/users.json`
-setiap kali ada yang mencoba login. Artinya:
-
-- Akun baru hanya bisa dipakai login **dari browser/perangkat yang sama**
-  tempat Wakasek Kesiswaan membuatnya (atau perangkat lain yang datanya
-  disalin secara manual). Ini adalah keterbatasan yang sama seperti seluruh
-  data tambahan lain di aplikasi ini (lihat bagian *Keterbatasan* di bawah).
-- Jika ingin akun benar-benar tersimpan permanen di `data/users.json` dan
-  bisa dipakai login dari perangkat mana pun, tambahkan akun tersebut secara
-  manual ke file `data/users.json` (lalu commit/upload ulang ke GitHub Pages),
-  atau hubungkan aplikasi ini ke backend/database sungguhan.
 
 ## Menambah organisasi siswa baru (mis. Rohis, KIR, dsb.)
 
 Karena dashboard organisasi dibangun secara generik dari `data/laporan-organisasi.json`,
 menambah organisasi baru tidak perlu mengubah kode dashboard sama sekali:
 
-1. Buat file baru, misalnya `data/waksis/rohis.json`, dengan struktur field
-   yang sama seperti `data/waksis/osis.json` (`namaOrganisasi`, `periode`,
-   `pembina`, `anggota`, `programKerja`, `kegiatan`, `keuangan`, `lpj`).
+1. Buat file baru, misalnya `data/rohis.json`, dengan struktur field yang sama
+   seperti `data/osis.json` (`namaOrganisasi`, `periode`, `pembina`, `anggota`,
+   `programKerja`, `kegiatan`, `keuangan`, `lpj`).
 2. Tambahkan akun login untuk organisasi tersebut di `data/users.json`
-   (isi `role` dengan id organisasi, misalnya `"rohis"`, di dalam array `users`)
-   — atau, lebih mudah, biarkan Wakasek Kesiswaan membuatkan akunnya sendiri
-   lewat tab **Admin BK & Organisasi** setelah langkah 4 di bawah selesai
-   (organisasi baru otomatis muncul di pilihan "Dibuatkan untuk").
+   (isi `role` dengan id organisasi, misalnya `"rohis"`, di dalam array `users`).
 3. Tambahkan tampilan role-nya di objek `roleInfo` (juga di `data/users.json`).
-4. Tambahkan satu entri baru di array `data/waksis/laporan-organisasi.json`, misalnya:
+4. Tambahkan satu entri baru di array `data/laporan-organisasi.json`, misalnya:
    ```json
    { "id": "rohis", "roleKey": "rohis", "label": "Rohis", "color": "#0891b2", "dataKey": "rohis" }
    ```
-5. Di `index.html`, tambahkan `"data/waksis/rohis.json"` pada daftar `DATA_FILES`
-   dan pada bagian `Promise.all([...])` / `ORG_DATA_BY_KEY` di dekat awal
+5. Di `index.html`, tambahkan `"rohis.json"` pada daftar `DATA_FILES` dan
+   pada bagian `Promise.all([...])` / `ORG_DATA_BY_KEY` di dekat awal
    `<script>` paling bawah, mengikuti pola organisasi yang sudah ada
    (osis/pramuka/pmr/paskibra), supaya file barunya ikut diambil lewat
    `fetch()` dan `dataKey: "rohis"` bisa disambungkan ke datanya.
@@ -195,19 +164,16 @@ Ini adalah aplikasi **statis** tanpa backend/database sungguhan, karena
 dihosting di GitHub Pages. Konsekuensinya:
 
 1. **Login bukan otentikasi aman.** Daftar username/password ada di
-   `data/users.json` yang bisa dibaca siapa pun yang membuka source code
+   `data/users.js` yang bisa dibaca siapa pun yang membuka source code
    halaman. Jangan gunakan password yang juga dipakai di sistem lain, dan
    jangan anggap ini setara sistem login sungguhan untuk data sensitif.
 2. **Data yang ditambahkan lewat form disimpan di `localStorage` browser
    masing-masing perangkat.** Artinya data yang ditambahkan Guru BK di
    komputernya sendiri **tidak otomatis muncul** di komputer Kepala Sekolah,
    kecuali mereka membuka aplikasi dari perangkat/browser yang sama.
-   Ini termasuk **akun baru yang dibuat lewat panel "Admin BK & Organisasi"**
-   — akun tersebut hanya bisa dipakai login dari browser tempat akun itu
-   dibuat, bukan dari perangkat lain manapun, kecuali ditambahkan manual
-   ke `data/users.json`. Untuk data (dan akun) yang benar-benar tersinkron
-   antar pengguna dan perangkat, aplikasi ini perlu dihubungkan ke backend +
-   database sungguhan (misalnya Google Sheets API, Firebase, atau server sendiri).
+   Untuk data bersama yang benar-benar tersinkron antar pengguna dan
+   perangkat, aplikasi ini perlu dihubungkan ke backend + database
+   sungguhan (misalnya Google Sheets API, Firebase, atau server sendiri).
 3. Cocok dipakai untuk: demo internal, prototipe, atau penggunaan di satu
    perangkat/laboratorium bersama. Untuk penggunaan sekolah nyata dengan
    banyak pengguna di berbagai lokasi, disarankan menambahkan backend.
